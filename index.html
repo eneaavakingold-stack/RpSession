@@ -359,7 +359,7 @@
     .drawer-header h2 { font-family: 'Cinzel Decorative', serif; font-size: 1.1rem; color: var(--gold); }
     .drawer-btn { background: rgba(212, 175, 55, 0.06); border: 1px solid var(--border); color: var(--text); padding: 10px; margin: 5px 12px 0; border-radius: 4px; text-align: left; font-family: 'Cinzel', serif; font-size: 0.8rem; cursor: pointer; }
     .drawer-list { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 4px; }
-    .drawer-item { padding: 8px 10px; border-radius: 4px; cursor: pointer; font-size: 0.95rem; display: flex; justify-content: space-between; }
+    .drawer-item { padding: 8px 10px; border-radius: 4px; cursor: pointer; font-size: 0.95rem; display: flex; justify-content: space-between; align-items: center; }
     .drawer-item.active { background: rgba(212,175,55,0.15); border-left: 2px solid var(--gold); color: var(--gold); }
 
     .modal-sheet { width: 100%; max-height: 85vh; background: #16120e; border-radius: 8px 8px 0 0; border: 1px solid var(--border); padding: 18px 14px calc(14px + var(--safe-bottom)); display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
@@ -481,6 +481,7 @@
       <button class="drawer-btn" onclick="openManageCharsModal()">&#x1F465; Gestisci ed Elimina Eroi</button>
       <button class="drawer-btn" onclick="openRoomModal()">+ Nuovo Capitolo</button>
       <button class="drawer-btn" onclick="clearCurrentRoom()">&#x1F5D1; Svuota Questo Capitolo</button>
+      <button class="drawer-btn" style="color:var(--red);" onclick="deleteCurrentRoom()">&#x1F5D1; Elimina Questo Capitolo</button>
       <button class="drawer-btn" onclick="exportStory()">&#x1F4BE; Esporta Cronaca</button>
       <div style="padding:14px 12px 4px; font-size:0.7rem; color:var(--muted); font-family:'Cinzel', serif;">CAPITOLI & STANZE</div>
       <div class="drawer-list" id="roomList"></div>
@@ -765,10 +766,13 @@
     }
 
     function getRoom() {
-      return state.rooms.find(r => r.id === state.activeRoom) || state.rooms[0];
+      return (state.rooms && state.rooms.find(r => r.id === state.activeRoom)) || (state.rooms && state.rooms[0]) || { id: 'r1', title: 'Capitolo I', messages: [] };
     }
 
     function getChar() {
+      if (!state.characters || state.characters.length === 0) {
+        return { id: null, name: 'Senza Nome', color: 'var(--gold)', avatar: '' };
+      }
       return state.characters.find(c => c.id === state.activeChar) || state.characters[0];
     }
 
@@ -975,6 +979,30 @@
       }
     }
 
+    function deleteCurrentRoom() {
+      toggleDrawer(false);
+      const room = getRoom();
+      deleteRoom(room.id, room.title);
+    }
+
+    function deleteRoom(roomId, roomTitle) {
+      if (confirm(`Vuoi davvero eliminare definitivamente il capitolo "${roomTitle}" e tutti i suoi messaggi? L'azione non si può annullare.`)) {
+        state.rooms = state.rooms.filter(r => r.id !== roomId);
+        if (state.rooms.length === 0) {
+          const defaultRoom = { id: 'r_' + Date.now(), title: 'Capitolo I', messages: [] };
+          state.rooms.push(defaultRoom);
+          state.activeRoom = defaultRoom.id;
+        } else if (state.activeRoom === roomId) {
+          state.activeRoom = state.rooms[0].id;
+        }
+        if (editingMsgId) cancelEdit();
+        if (isSceneMode) cancelSceneMode();
+        syncAll();
+        renderRooms();
+        renderStory();
+      }
+    }
+
     function showAvatar(url, name, color) {
       if (!url) return;
       const modal = document.getElementById('avatarModal');
@@ -996,6 +1024,14 @@
     function renderManageChars() {
       const list = document.getElementById('manageCharsList');
       list.innerHTML = '';
+
+      if (!state.characters || state.characters.length === 0) {
+        const emptyMsg = document.createElement('div');
+        emptyMsg.style.cssText = 'text-align:center; color:var(--muted); padding:16px; font-style:italic; font-size:0.9rem;';
+        emptyMsg.textContent = 'Nessun eroe presente nella cronaca.';
+        list.appendChild(emptyMsg);
+        return;
+      }
 
       state.characters.forEach(c => {
         const row = document.createElement('div');
@@ -1025,13 +1061,12 @@
     }
 
     function deleteCharacter(charId, charName) {
-      if (state.characters.length <= 1) {
-        alert("Deve esserci almeno un eroe attivo nella cronaca!");
-        return;
-      }
       if (confirm(`Vuoi davvero congedare l'eroe ${charName}?`)) {
-        state.characters = state.characters.filter(c => c.id !== charId);
-        if (state.activeChar === charId) {
+        state.characters = (state.characters || []).filter(c => c.id !== charId);
+        if (state.characters.length === 0) {
+          state.activeChar = null;
+          state.mode = 'narrator';
+        } else if (state.activeChar === charId) {
           state.activeChar = state.characters[0].id;
         }
         syncAll();
@@ -1197,7 +1232,7 @@
       });
       bar.appendChild(btnOoc);
 
-      state.characters.forEach(c => {
+      (state.characters || []).forEach(c => {
         const tag = document.createElement('div');
         tag.className = `char-tag ${state.activeChar === c.id && state.mode === 'ic' ? 'active' : ''}`;
         tag.style.color = c.color;
@@ -1252,7 +1287,7 @@
       const blocks = [];
       let currentBlock = null;
 
-      let defaultChar = state.characters.find(c => c.name === msg.author) || {
+      let defaultChar = (state.characters || []).find(c => c.name === msg.author) || {
         name: msg.author || 'Eroe',
         color: msg.color || '#2e8b57',
         avatar: msg.avatar || ''
@@ -1268,7 +1303,7 @@
         let matchedChar = null;
         let dialogueText = trimmed;
 
-        for (const char of state.characters) {
+        for (const char of (state.characters || [])) {
           const escapedName = char.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
           const regex = new RegExp(`^(\\[?${escapedName}\\]?\\s*:\\s*)(.*)$`, 'i');
           const match = trimmed.match(regex);
@@ -1489,13 +1524,15 @@
     }
 
     function deleteMsg(id) {
-      if (editingMsgId === id) cancelEdit();
-      const room = getRoom();
-      room.messages = room.messages.filter(m => m.id !== id);
-      syncAll();
-      const targetEl = document.getElementById('msg_' + id);
-      if (targetEl) targetEl.remove();
-      else renderStory();
+      if (confirm("Vuoi davvero cancellare questo messaggio?")) {
+        if (editingMsgId === id) cancelEdit();
+        const room = getRoom();
+        room.messages = room.messages.filter(m => m.id !== id);
+        syncAll();
+        const targetEl = document.getElementById('msg_' + id);
+        if (targetEl) targetEl.remove();
+        else renderStory();
+      }
     }
 
     function openRoomModal() {
@@ -1528,7 +1565,35 @@
       state.rooms.forEach(r => {
         const item = document.createElement('div');
         item.className = `drawer-item ${r.id === state.activeRoom ? 'active' : ''}`;
-        item.innerHTML = `<span>${r.title}</span><small style="color:var(--muted)">${(r.messages || []).length}</small>`;
+        
+        const titleSpan = document.createElement('span');
+        titleSpan.style.cssText = 'overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; margin-right:6px;';
+        titleSpan.textContent = r.title;
+
+        const metaBox = document.createElement('div');
+        metaBox.style.cssText = 'display:flex; align-items:center; gap:8px; flex-shrink:0;';
+
+        const count = document.createElement('small');
+        count.style.color = 'var(--muted)';
+        count.textContent = (r.messages || []).length;
+
+        const delBtn = document.createElement('button');
+        delBtn.innerHTML = '&#x1F5D1;';
+        delBtn.title = 'Elimina capitolo';
+        delBtn.style.cssText = 'background:none; border:none; color:var(--muted); cursor:pointer; font-size:0.85rem; padding:2px 4px;';
+        delBtn.onmouseenter = () => delBtn.style.color = 'var(--red)';
+        delBtn.onmouseleave = () => delBtn.style.color = 'var(--muted)';
+        delBtn.onclick = (e) => {
+          e.stopPropagation();
+          deleteRoom(r.id, r.title);
+        };
+
+        metaBox.appendChild(count);
+        metaBox.appendChild(delBtn);
+
+        item.appendChild(titleSpan);
+        item.appendChild(metaBox);
+
         item.onclick = () => {
           state.activeRoom = r.id;
           if (editingMsgId) cancelEdit();
@@ -1566,6 +1631,7 @@
       const avatar = selectedAvatarBase64 || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(name)}`;
       const color = document.getElementById('cColor').value;
 
+      if (!state.characters) state.characters = [];
       const c = { id: 'c_' + Date.now(), name, avatar, color };
       state.characters.push(c);
       state.activeChar = c.id;
@@ -1613,4 +1679,3 @@
   </script>
 </body>
 </html>
-
