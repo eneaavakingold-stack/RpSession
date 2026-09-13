@@ -165,6 +165,7 @@
       gap: 3px;
     }
     .action-text { color: #e5b078; font-style: italic; }
+    .thought-text { color: #9bb1c9; font-style: italic; }
 
     .dialogue-row {
       display: flex;
@@ -305,7 +306,7 @@
       color: var(--gold);
       border-radius: 4px;
       font-family: 'Cinzel', serif;
-      font-size: 1.05rem;
+      font-size: 0.95rem;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -468,8 +469,8 @@
       
       <div class="input-row">
         <div class="tools-column">
-          <button class="tool-btn" id="btnQuickScene" title="Salto temporale / Scena">&#x23F3;</button>
-          <button class="tool-btn" id="btnAsterisks" title="Azione corsiva">* *</button>
+          <button class="tool-btn" id="btnTildes" title="Pensiero corsivo (~ ~)">~ ~</button>
+          <button class="tool-btn" id="btnAsterisks" title="Azione corsiva (* *)">* *</button>
         </div>
         <textarea id="entryInput" placeholder="Narra o intesse dialoghi..."></textarea>
         <button class="btn-send" id="sendBtn">&#x27A4;</button>
@@ -922,14 +923,14 @@
         cancelSceneMode();
       });
 
+      document.getElementById('btnTildes').addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        insertThoughtTildes();
+      });
+
       document.getElementById('btnAsterisks').addEventListener('pointerdown', (e) => {
         e.preventDefault();
         insertActionAsterisks();
-      });
-
-      document.getElementById('btnQuickScene').addEventListener('pointerdown', (e) => {
-        e.preventDefault();
-        toggleSceneMode();
       });
 
       const fileInput = document.getElementById('cFile');
@@ -991,6 +992,18 @@
           syncAll();
         }
       });
+    }
+
+    function insertThoughtTildes() {
+      const input = document.getElementById('entryInput');
+      const start = input.selectionStart || input.value.length;
+      const end = input.selectionEnd || input.value.length;
+      const val = input.value;
+      input.value = val.substring(0, start) + '~~' + val.substring(end);
+      input.focus();
+      input.setSelectionRange(start + 1, start + 1);
+      autoResizeInput(input);
+      handleTypingInput();
     }
 
     function insertActionAsterisks() {
@@ -1250,6 +1263,19 @@
       const bar = document.getElementById('charBar');
       bar.innerHTML = '';
 
+      // CLESSIDRA (Salto temporale / Scena)
+      const btnScene = document.createElement('button');
+      btnScene.className = `mode-tag ${isSceneMode ? 'active' : ''}`;
+      btnScene.id = 'btnQuickScene';
+      btnScene.textContent = '⏳';
+      btnScene.title = "Salto temporale / Scena";
+      btnScene.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        toggleSceneMode();
+      });
+      bar.appendChild(btnScene);
+
+      // NARRATORE
       const btnNarr = document.createElement('button');
       btnNarr.className = `mode-tag ${state.mode === 'narrator' ? 'active' : ''}`;
       btnNarr.textContent = "Narratore";
@@ -1262,6 +1288,7 @@
       });
       bar.appendChild(btnNarr);
 
+      // // OOC
       const btnOoc = document.createElement('button');
       btnOoc.className = `mode-tag ${state.mode === 'ooc' ? 'active' : ''}`;
       btnOoc.textContent = "// OOC";
@@ -1312,6 +1339,9 @@
     }
 
     function updateCharBarActive() {
+      const btnScene = document.getElementById('btnQuickScene');
+      if (btnScene) btnScene.classList.toggle('active', isSceneMode);
+
       document.querySelectorAll('.mode-tag').forEach(b => {
         if (b.textContent === "Narratore") b.classList.toggle('active', state.mode === 'narrator');
         if (b.textContent === "// OOC") b.classList.toggle('active', state.mode === 'ooc');
@@ -1326,7 +1356,11 @@
       const esc = str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m]);
 
       if (msg && (msg.type === 'narrator' || msg.type === 'ooc')) {
-        return `<div style="font-style:italic; padding: 2px 4px;">${esc.replace(/\*([^*\n]+)\*/g, '<span class="action-text">*$1*</span>').replace(/\n/g, '<br>')}</div>`;
+        const parsed = esc
+          .replace(/~([^~\n]+)~/g, '<span class="thought-text">~$1~</span>')
+          .replace(/\*([^*\n]+)\*/g, '<span class="action-text">*$1*</span>')
+          .replace(/\n/g, '<br>');
+        return `<div style="font-style:italic; padding: 2px 4px;">${parsed}</div>`;
       }
 
       const lines = esc.split('\n');
@@ -1379,7 +1413,7 @@
           ? `<img src="${b.char.avatar}" class="dialogue-mini-avatar" style="border-color:${b.char.color};" title="Ingrandisci effigie" onclick="showAvatar(this.src, '${escapedName}', '${b.char.color}')">`
           : '';
         const parsedText = b.lines
-          .map(l => l ? l.replace(/\*([^*\n]+)\*/g, '<span class="action-text">*$1*</span>') : '')
+          .map(l => l ? l.replace(/~([^~\n]+)~/g, '<span class="thought-text">~$1~</span>').replace(/\*([^*\n]+)\*/g, '<span class="action-text">*$1*</span>') : '')
           .join('<br>');
 
         return (
@@ -1447,7 +1481,8 @@
         if (editingMsgId) cancelEdit();
         isSceneMode = true;
         document.getElementById('sceneBanner').style.display = 'flex';
-        document.getElementById('btnQuickScene').classList.add('active');
+        const qs = document.getElementById('btnQuickScene');
+        if (qs) qs.classList.add('active');
         const input = document.getElementById('entryInput');
         input.placeholder = "Descrivi il salto temporale o cambio scena...";
         input.focus();
@@ -1462,7 +1497,8 @@
     function cancelSceneMode() {
       isSceneMode = false;
       document.getElementById('sceneBanner').style.display = 'none';
-      document.getElementById('btnQuickScene').classList.remove('active');
+      const qs = document.getElementById('btnQuickScene');
+      if (qs) qs.classList.remove('active');
       const input = document.getElementById('entryInput');
       input.placeholder = "Narra o intesse dialoghi...";
       const sendBtn = document.getElementById('sendBtn');
