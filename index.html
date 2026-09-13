@@ -239,6 +239,26 @@
     .banner-bar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 85%; }
     .banner-bar button { background: none; border: none; color: var(--muted); font-size: 1.1rem; cursor: pointer; padding: 0 4px; }
 
+    /* STRISCIA CHI STA NARRANDO */
+    .typing-notice {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      background: rgba(212, 175, 55, 0.08);
+      border-left: 2.5px solid var(--gold);
+      padding: 4px 8px;
+      border-radius: 0 4px 4px 0;
+      font-size: 0.8rem;
+      font-style: italic;
+      color: var(--gold);
+      letter-spacing: 0.4px;
+      animation: pulseGlow 1.8s infinite ease-in-out;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.65; }
+      50% { opacity: 1; }
+    }
+
     .char-bar {
       display: flex;
       align-items: center;
@@ -456,6 +476,11 @@
         <button id="cancelSceneBtn">&#x2715;</button>
       </div>
 
+      <!-- AVVISO ELEGANTE DI SCRITTURA -->
+      <div class="typing-notice" id="typingNotice">
+        <span>&#x2726;</span> <span id="typingNoticeText">sta narrando...</span>
+      </div>
+
       <div class="char-bar" id="charBar"></div>
       
       <div class="input-row">
@@ -493,7 +518,7 @@
   <div class="modal-overlay" id="playerModal" style="z-index: 70; align-items: center; justify-content: center;" onclick="closePlayerModal()">
     <div class="modal-sheet" style="max-width: 320px; border-radius: 8px;" onclick="event.stopPropagation()">
       <h3>Chi sta giocando?</h3>
-      <p style="font-size:0.85rem; color:var(--muted); line-height:1.4;">Inserisci il tuo nome. Vedrai nella barra solo gli eroi che hai creato tu:</p>
+      <p style="font-size:0.85rem; color:var(--muted); line-height:1.4;">Inserisci il tuo nome per distinguerti dall'altro giocatore:</p>
       <input type="text" id="playerNameInput" placeholder="Es. Enea">
       <div class="modal-actions">
         <button style="background:var(--gold); border:none; color:#000; font-weight:bold; width:100%;" onclick="savePlayerName()">Salva Profilo</button>
@@ -606,6 +631,10 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const dbRef = db.ref('rp_live_chronicles');
+    const typingRootRef = db.ref('rp_typing');
+
+    let typingTimeout = null;
+    let currentTypingQuery = null;
 
     const SCENARIOS = [
       {
@@ -782,7 +811,6 @@
       return (state.rooms && state.rooms.find(r => r.id === state.activeRoom)) || (state.rooms && state.rooms[0]) || { id: 'r1', title: 'Capitolo I', messages: [] };
     }
 
-    /* FILTRO RIGIDO: Mostra ESCLUSIVAMENTE i personaggi del giocatore corrente */
     function getMyCharacters() {
       if (!state.characters || !currentPlayer) return [];
       return state.characters.filter(c => c.owner && c.owner.toLowerCase().trim() === currentPlayer.toLowerCase().trim());
@@ -819,6 +847,85 @@
       const input = document.getElementById('entryInput');
       input.style.height = '76px';
       input.style.overflowY = 'hidden';
+    }
+
+    function getSafePlayerKey() {
+      if (!currentPlayer) return 'anon';
+      return encodeURIComponent(currentPlayer.toLowerCase().trim()).replace(/\./g, '_');
+    }
+
+    /* TRASMISSIONE STATO DIGITAZIONE */
+    function setTypingStatus(isTyping) {
+      if (!currentPlayer) return;
+      const room = getRoom();
+      const ref = typingRootRef.child(room.id).child(getSafePlayerKey());
+
+      if (isTyping) {
+        let label = currentPlayer;
+        if (state.mode === 'ic') {
+          const char = getChar();
+          if (char && char.name) label = char.name;
+        } else if (state.mode === 'narrator') {
+          label = "Il Narratore";
+        }
+
+        ref.set({
+          user: currentPlayer,
+          label: label,
+          mode: state.mode,
+          time: Date.now()
+        });
+        ref.onDisconnect().remove();
+      } else {
+        ref.remove();
+      }
+    }
+
+    function handleTypingInput() {
+      const input = document.getElementById('entryInput');
+      if (input.value.trim().length > 0) {
+        setTypingStatus(true);
+        if (typingTimeout) clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {
+          setTypingStatus(false);
+        }, 3000);
+      } else {
+        if (typingTimeout) clearTimeout(typingTimeout);
+        setTypingStatus(false);
+      }
+    }
+
+    /* ASCOLTO DIGITAZIONE ALTRI GIOCATORI */
+    function listenToTyping() {
+      if (currentTypingQuery) currentTypingQuery.off();
+      const room = getRoom();
+      currentTypingQuery = typingRootRef.child(room.id);
+
+      currentTypingQuery.on('value', (snap) => {
+        const data = snap.val() || {};
+        const now = Date.now();
+        const activeWriters = [];
+
+        Object.keys(data).forEach(k => {
+          const item = data[k];
+          if (item && item.user && item.user.toLowerCase().trim() !== (currentPlayer || '').toLowerCase().trim()) {
+            if (now - item.time < 5000) {
+              const verb = item.mode === 'ooc' ? 'sta scrivendo...' : 'sta narrando...';
+              activeWriters.push(`${item.label || item.user} ${verb}`);
+            }
+          }
+        });
+
+        const noticeBox = document.getElementById('typingNotice');
+        const noticeText = document.getElementById('typingNoticeText');
+
+        if (activeWriters.length > 0) {
+          noticeText.textContent = activeWriters.join(' • ');
+          noticeBox.style.display = 'flex';
+        } else {
+          noticeBox.style.display = 'none';
+        }
+      });
     }
 
     function levenshtein(a, b) {
@@ -913,6 +1020,7 @@
       document.getElementById('playerModal').style.display = 'none';
       renderCharBar();
       renderStory();
+      listenToTyping();
     }
 
     function init() {
@@ -925,10 +1033,14 @@
       renderRooms();
       renderCharBar();
       renderStory();
+      listenToTyping();
       triggerAmbient(SCENARIOS[14].url, SCENARIOS[14].name);
 
       const input = document.getElementById('entryInput');
-      input.addEventListener('input', () => autoResizeInput(input));
+      input.addEventListener('input', () => {
+        autoResizeInput(input);
+        handleTypingInput();
+      });
 
       document.getElementById('sendBtn').addEventListener('pointerdown', (e) => {
         e.preventDefault();
@@ -1025,6 +1137,7 @@
       input.focus();
       input.setSelectionRange(start + 1, start + 1);
       autoResizeInput(input);
+      handleTypingInput();
     }
 
     function clearCurrentRoom() {
@@ -1058,6 +1171,7 @@
         syncAll();
         renderRooms();
         renderStory();
+        listenToTyping();
       }
     }
 
@@ -1279,6 +1393,7 @@
         if (isSceneMode) cancelSceneMode();
         state.mode = (state.mode === 'narrator' ? 'ic' : 'narrator');
         updateCharBarActive();
+        handleTypingInput();
       });
       bar.appendChild(btnNarr);
 
@@ -1290,6 +1405,7 @@
         if (isSceneMode) cancelSceneMode();
         state.mode = (state.mode === 'ooc' ? 'ic' : 'ooc');
         updateCharBarActive();
+        handleTypingInput();
       });
       bar.appendChild(btnOoc);
 
@@ -1317,10 +1433,12 @@
             input.focus();
             input.setSelectionRange(newPos, newPos);
             autoResizeInput(input);
+            handleTypingInput();
           } else {
             state.activeChar = c.id;
             state.mode = 'ic';
             updateCharBarActive();
+            handleTypingInput();
           }
         });
 
@@ -1495,6 +1613,9 @@
       const text = input.value.trim();
       if (!text) return;
 
+      if (typingTimeout) clearTimeout(typingTimeout);
+      setTypingStatus(false);
+
       const room = getRoom();
 
       if (isSceneMode) {
@@ -1615,6 +1736,7 @@
       syncAll();
       renderRooms();
       renderStory();
+      listenToTyping();
       closeModals();
     }
 
@@ -1663,6 +1785,7 @@
           if (isSceneMode) cancelSceneMode();
           renderRooms();
           renderStory();
+          listenToTyping();
           toggleDrawer(false);
         };
         container.appendChild(item);
