@@ -39,7 +39,6 @@
       overflow: hidden;
     }
 
-    /* RIMOZIONE FORZATA BANNER TIINY HOST */
     div[class*="tiiny"], div[id*="tiiny"], a[href*="tiiny.host"], iframe[src*="tiiny"] {
       display: none !important;
       visibility: hidden !important;
@@ -77,7 +76,6 @@
       overflow: hidden;
     }
 
-    /* HEADER */
     header {
       height: 52px;
       background: var(--panel);
@@ -115,7 +113,6 @@
       box-shadow: 0 0 6px #2ecc71;
     }
 
-    /* CRONOLOGIA */
     #story {
       flex: 1;
       overflow-y: auto;
@@ -169,7 +166,6 @@
     }
     .action-text { color: #e5b078; font-style: italic; }
 
-    /* BATTUTE DIALOGHI */
     .dialogue-row {
       display: flex;
       align-items: flex-start;
@@ -215,7 +211,6 @@
       border-bottom: 1px double var(--border);
     }
 
-    /* FOOTER */
     footer {
       background: var(--panel);
       border-top: 1px solid var(--border);
@@ -239,7 +234,6 @@
     .banner-bar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 85%; }
     .banner-bar button { background: none; border: none; color: var(--muted); font-size: 1.1rem; cursor: pointer; padding: 0 4px; }
 
-    /* RIGA DI SCRITTURA */
     .typing-notice {
       display: none;
       align-items: center;
@@ -355,7 +349,6 @@
       justify-content: center;
     }
 
-    /* MODALI */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -469,7 +462,6 @@
 
       <div class="char-bar" id="charBar"></div>
 
-      <!-- VISUALIZZATORE DIGITAZIONE -->
       <div class="typing-notice" id="typingNotice">
         ✍️ <span id="typingNoticeText"></span>
       </div>
@@ -508,8 +500,8 @@
   <!-- MODALE PROFILO GIOCATORE -->
   <div class="modal-overlay" id="playerModal" style="z-index: 70; align-items: center; justify-content: center;" onclick="closePlayerModal()">
     <div class="modal-sheet" style="max-width: 320px; border-radius: 8px;" onclick="event.stopPropagation()">
-      <h3>Chi sta giocando?</h3>
-      <p style="font-size:0.85rem; color:var(--muted); line-height:1.4;">Inserisci il tuo nome per distinguerti dall'altro giocatore:</p>
+      <h3>Nome Profilo</h3>
+      <p style="font-size:0.85rem; color:var(--muted); line-height:1.4;">Inserisci il nome con cui vuoi essere identificato:</p>
       <input type="text" id="playerNameInput" placeholder="Es. Enea">
       <div class="modal-actions">
         <button style="background:var(--gold); border:none; color:#000; font-weight:bold; width:100%;" onclick="savePlayerName()">Salva Profilo</button>
@@ -528,7 +520,6 @@
     </div>
   </div>
 
-  <!-- MODALE CREAZIONE EROE -->
   <div class="modal-overlay" id="charModal" onclick="closeModals()">
     <div class="modal-sheet" onclick="event.stopPropagation()">
       <h3>Forgia Nuovo Eroe</h3>
@@ -551,7 +542,6 @@
     </div>
   </div>
 
-  <!-- MODALE GESTISCI I PROPRI EROI -->
   <div class="modal-overlay" id="manageCharsModal" onclick="closeModals()">
     <div class="modal-sheet" onclick="event.stopPropagation()">
       <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -565,7 +555,6 @@
     </div>
   </div>
 
-  <!-- MODALE VISUALIZZATORE EFFIGIE -->
   <div class="modal-overlay" id="avatarModal" style="z-index: 60; align-items: center; justify-content: center;" onclick="closeModals()">
     <div class="avatar-view-card" onclick="event.stopPropagation()">
       <img id="avatarModalImg" src="" alt="Effigie">
@@ -574,7 +563,6 @@
     </div>
   </div>
 
-  <!-- MODALE RITAGLIO & ZOOM AVATAR -->
   <div class="modal-overlay" id="cropModal" style="z-index: 50;">
     <div class="modal-sheet" style="align-items: center;" onclick="event.stopPropagation()">
       <h3>Inquadra l'Effigie</h3>
@@ -629,136 +617,32 @@
     let remoteTypingText = '';
 
     const SCENARIOS = [
-      {
-        name: "Portale Arcano / Varco Magico",
-        match: ["portale", "varco", "fenditura", "teletrasporto", "vortice", "glifo dimensionale", "cerchio magico"],
-        url: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Bivio / Crocevia",
-        match: ["bivio", "crocevia", "incrocio", "due strade", "strade si dividono", "sentiero si divide", "svolta"],
-        url: "https://images.unsplash.com/photo-1476820865390-c52aeebb9891?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Castello in Lontananza",
-        match: ["castello", "rocca", "fortezza", "baluardo", "mura della fortezza"],
-        url: "https://images.unsplash.com/photo-1514539079130-25950c84af65?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Cimitero Antico & Lapidi",
-        match: ["cimitero", "tomba", "tombe", "lapide", "lapidi", "mausoleo", "sepolcro", "ossario"],
-        url: "https://images.unsplash.com/photo-1509114397022-ed747cca3f65?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Prigione & Segrete di Pietra",
-        match: ["prigione", "segrete", "cella", "sbarre", "gabbia", "catene", "carcere"],
-        url: "https://images.unsplash.com/photo-1584824486509-112e4181ff6b?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Interno Casa / Dimora Rustica",
-        match: ["casa", "camera", "stanza", "focolare", "caminetto", "letto", "dimora", "rifugio caldo"],
-        url: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Negozio / Bottega Antica",
-        match: ["negozio", "bottega", "emporio", "mercante", "bancarella", "mercanzia", "comprare", "venditore"],
-        url: "https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Cielo & Firmamento",
-        match: ["cielo", "nuvole", "firmamento", "aria aperta", "etere"],
-        url: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Fucina & Armeria",
-        match: ["fucina", "forgia", "incudine", "fabbro", "ferro battuto", "armeria", "spade"],
-        url: "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Caverna & Antro Profondo",
-        match: ["caverna", "grotta", "antro", "sotterrane", "cunicol", "stalattit", "stalagmit"],
-        url: "https://images.unsplash.com/photo-1509225770129-fbcf8a696c0b?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Biblioteca Arcana & Tomi",
-        match: ["biblioteca", "archivio", "libreria", "pergamene", "tomi", "manoscritti", "libri"],
-        url: "https://images.unsplash.com/photo-1507842229451-79b1be886a20?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Taverna & Locanda",
-        match: ["taverna", "locanda", "oste", "banco", "boccale", "birra", "osteria"],
-        url: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Tempio & Cattedrale",
-        match: ["tempio", "cattedrale", "chiesa", "santuario", "altare", "cappella"],
-        url: "https://images.unsplash.com/photo-1548625361-1959779df50f?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Sala del Trono / Reggia",
-        match: ["trono", "reggia", "palazzo reale", "corte reale"],
-        url: "https://images.unsplash.com/photo-1541123437800-1bb1317badc2?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Bosco Antico",
-        match: ["bosco", "foresta", "alberi", "radura", "foglie", "radici"],
-        url: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Rovine Dimenticate",
-        match: ["rovine", "macerie", "abbandonat", "rudere", "diroccat"],
-        url: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Pioggia & Tempesta",
-        match: ["pioggia", "temporale", "tempesta", "piove", "fulmine", "tuono", "diluvio"],
-        url: "https://images.unsplash.com/photo-1534274988757-a28bf1a57c17?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Notte Stellata",
-        match: ["notte", "buio", "oscurit", "tenebre", "stelle", "luna"],
-        url: "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Neve & Bufera",
-        match: ["neve", "ghiaccio", "bufera", "tundra", "gelo", "inverno"],
-        url: "https://images.unsplash.com/photo-1483921020237-2ff51e8e4b22?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Montagne & Dirupi",
-        match: ["montagna", "vette", "dirupo", "rupe", "picco", "precipizio"],
-        url: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Mare & Costa",
-        match: ["mare", "spiaggia", "costa", "oceano", "onde", "scogliera"],
-        url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Palude Oscura",
-        match: ["palude", "acquitrino", "fanghiglia", "stagno"],
-        url: "https://images.unsplash.com/photo-1508873696983-2df5293cb32b?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Deserto & Sabbia",
-        match: ["deserto", "dune", "oasi", "sabbia"],
-        url: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Borgo & Strade Medievali",
-        match: ["città", "borgo", "strada", "vicolo", "piazza", "villaggio"],
-        url: "https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Fuoco & Fiamme",
-        match: ["fuoco", "vulcano", "lava", "magma", "fiamme", "cenere"],
-        url: "https://images.unsplash.com/photo-1527489377706-5bf97e608852?auto=format&fit=crop&w=900&q=70"
-      },
-      {
-        name: "Accampamento Notturno",
-        match: ["accampamento", "tenda", "falò", "bivacco"],
-        url: "https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?auto=format&fit=crop&w=900&q=70"
-      }
+      { name: "Portale Arcano / Varco Magico", match: ["portale", "varco", "fenditura", "teletrasporto", "vortice", "glifo dimensionale", "cerchio magico"], url: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=900&q=70" },
+      { name: "Bivio / Crocevia", match: ["bivio", "crocevia", "incrocio", "due strade", "strade si dividono", "sentiero si divide", "svolta"], url: "https://images.unsplash.com/photo-1476820865390-c52aeebb9891?auto=format&fit=crop&w=900&q=70" },
+      { name: "Castello in Lontananza", match: ["castello", "rocca", "fortezza", "baluardo", "mura della fortezza"], url: "https://images.unsplash.com/photo-1514539079130-25950c84af65?auto=format&fit=crop&w=900&q=70" },
+      { name: "Cimitero Antico & Lapidi", match: ["cimitero", "tomba", "tombe", "lapide", "lapidi", "mausoleo", "sepolcro", "ossario"], url: "https://images.unsplash.com/photo-1509114397022-ed747cca3f65?auto=format&fit=crop&w=900&q=70" },
+      { name: "Prigione & Segrete di Pietra", match: ["prigione", "segrete", "cella", "sbarre", "gabbia", "catene", "carcere"], url: "https://images.unsplash.com/photo-1584824486509-112e4181ff6b?auto=format&fit=crop&w=900&q=70" },
+      { name: "Interno Casa / Dimora Rustica", match: ["casa", "camera", "stanza", "focolare", "caminetto", "letto", "dimora", "rifugio caldo"], url: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=900&q=70" },
+      { name: "Negozio / Bottega Antica", match: ["negozio", "bottega", "emporio", "mercante", "bancarella", "mercanzia", "comprare", "venditore"], url: "https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d?auto=format&fit=crop&w=900&q=70" },
+      { name: "Cielo & Firmamento", match: ["cielo", "nuvole", "firmamento", "aria aperta", "etere"], url: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=900&q=70" },
+      { name: "Fucina & Armeria", match: ["fucina", "forgia", "incudine", "fabbro", "ferro battuto", "armeria", "spade"], url: "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=900&q=70" },
+      { name: "Caverna & Antro Profondo", match: ["caverna", "grotta", "antro", "sotterrane", "cunicol", "stalattit", "stalagmit"], url: "https://images.unsplash.com/photo-1509225770129-fbcf8a696c0b?auto=format&fit=crop&w=900&q=70" },
+      { name: "Biblioteca Arcana & Tomi", match: ["biblioteca", "archivio", "libreria", "pergamene", "tomi", "manoscritti", "libri"], url: "https://images.unsplash.com/photo-1507842229451-79b1be886a20?auto=format&fit=crop&w=900&q=70" },
+      { name: "Taverna & Locanda", match: ["taverna", "locanda", "oste", "banco", "boccale", "birra", "osteria"], url: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=900&q=70" },
+      { name: "Tempio & Cattedrale", match: ["tempio", "cattedrale", "chiesa", "santuario", "altare", "cappella"], url: "https://images.unsplash.com/photo-1548625361-1959779df50f?auto=format&fit=crop&w=900&q=70" },
+      { name: "Sala del Trono / Reggia", match: ["trono", "reggia", "palazzo reale", "corte reale"], url: "https://images.unsplash.com/photo-1541123437800-1bb1317badc2?auto=format&fit=crop&w=900&q=70" },
+      { name: "Bosco Antico", match: ["bosco", "foresta", "alberi", "radura", "foglie", "radici"], url: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=900&q=70" },
+      { name: "Rovine Dimenticate", match: ["rovine", "macerie", "abbandonat", "rudere", "diroccat"], url: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=900&q=70" },
+      { name: "Pioggia & Tempesta", match: ["pioggia", "temporale", "tempesta", "piove", "fulmine", "tuono", "diluvio"], url: "https://images.unsplash.com/photo-1534274988757-a28bf1a57c17?auto=format&fit=crop&w=900&q=70" },
+      { name: "Notte Stellata", match: ["notte", "buio", "oscurit", "tenebre", "stelle", "luna"], url: "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=900&q=70" },
+      { name: "Neve & Bufera", match: ["neve", "ghiaccio", "bufera", "tundra", "gelo", "inverno"], url: "https://images.unsplash.com/photo-1483921020237-2ff51e8e4b22?auto=format&fit=crop&w=900&q=70" },
+      { name: "Montagne & Dirupi", match: ["montagna", "vette", "dirupo", "rupe", "picco", "precipizio"], url: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=70" },
+      { name: "Mare & Costa", match: ["mare", "spiaggia", "costa", "oceano", "onde", "scogliera"], url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=70" },
+      { name: "Palude Oscura", match: ["palude", "acquitrino", "fanghiglia", "stagno"], url: "https://images.unsplash.com/photo-1508873696983-2df5293cb32b?auto=format&fit=crop&w=900&q=70" },
+      { name: "Deserto & Sabbia", match: ["deserto", "dune", "oasi", "sabbia"], url: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=900&q=70" },
+      { name: "Borgo & Strade Medievali", match: ["città", "borgo", "strada", "vicolo", "piazza", "villaggio"], url: "https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=900&q=70" },
+      { name: "Fuoco & Fiamme", match: ["fuoco", "vulcano", "lava", "magma", "fiamme", "cenere"], url: "https://images.unsplash.com/photo-1527489377706-5bf97e608852?auto=format&fit=crop&w=900&q=70" },
+      { name: "Accampamento Notturno", match: ["accampamento", "tenda", "falò", "bivacco"], url: "https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?auto=format&fit=crop&w=900&q=70" }
     ];
 
     let currentBg = '';
@@ -777,9 +661,7 @@
 
     const DEFAULT_DATA = {
       characters: [],
-      rooms: [
-        { id: 'r1', title: 'Capitolo I: Nel Bosco Antico', messages: [] }
-      ],
+      rooms: [{ id: 'r1', title: 'Capitolo I: Nel Bosco Antico', messages: [] }],
       activeRoom: 'r1',
       activeChar: null,
       mode: 'ic',
@@ -793,9 +675,7 @@
     } catch(e) {}
 
     function syncAll() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      } catch(err) {}
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(err) {}
       if (dbRef) dbRef.set(state).catch(err => console.error("Sync error:", err));
     }
 
@@ -810,20 +690,8 @@
 
     function getChar() {
       const myChars = getMyCharacters();
-      if (myChars.length === 0) {
-        return { id: null, name: currentPlayer || 'Avventuriero', color: 'var(--gold)', avatar: '' };
-      }
+      if (myChars.length === 0) return { id: null, name: currentPlayer || 'Avventuriero', color: 'var(--gold)', avatar: '' };
       return myChars.find(c => c.id === state.activeChar) || myChars[0];
-    }
-
-    function getActiveWriterName() {
-      if (state.mode === 'ic') {
-        const c = getChar();
-        if (c && c.name) return c.name;
-      } else if (state.mode === 'narrator') {
-        return 'Narratore';
-      }
-      return currentPlayer || 'Qualcuno';
     }
 
     function resetMobileViewport() {
@@ -862,7 +730,7 @@
       const text = document.getElementById('typingNoticeText');
 
       if (input && input.value.trim().length > 0) {
-        text.textContent = `(${getActiveWriterName()}) sta scrivendo...`;
+        text.textContent = `${currentPlayer || 'Tu'} sta scrivendo...`;
         notice.style.display = 'flex';
       } else if (remoteTypingText) {
         text.textContent = remoteTypingText;
@@ -878,8 +746,7 @@
 
       if (isTyping) {
         ref.set({
-          user: currentPlayer,
-          label: getActiveWriterName(),
+          user: currentPlayer || 'Qualcuno',
           time: Date.now()
         });
         ref.onDisconnect().remove();
@@ -921,7 +788,7 @@
           const item = data[k];
           if (item && item.user && item.user.toLowerCase().trim() !== (currentPlayer || '').toLowerCase().trim()) {
             if (now - (item.time || 0) < 5000) {
-              others.push(`(${item.label || item.user}) sta scrivendo...`);
+              others.push(`${item.user} sta scrivendo...`);
             }
           }
         });
@@ -1014,7 +881,7 @@
     function savePlayerName() {
       const val = document.getElementById('playerNameInput').value.trim();
       if (!val) {
-        alert("Inserisci un nome prima di continuare!");
+        alert("Inserisci un nome!");
         return;
       }
       currentPlayer = val;
@@ -1141,7 +1008,7 @@
     function clearCurrentRoom() {
       toggleDrawer(false);
       const room = getRoom();
-      if (confirm(`Vuoi davvero cancellare TUTTA la cronaca del capitolo "${room.title}"? L'azione non si può annullare.`)) {
+      if (confirm(`Vuoi cancellare tutta la cronaca del capitolo "${room.title}"?`)) {
         room.messages = [];
         syncAll();
         renderStory();
@@ -1155,7 +1022,7 @@
     }
 
     function deleteRoom(roomId, roomTitle) {
-      if (confirm(`Vuoi davvero eliminare definitivamente il capitolo "${roomTitle}" e tutti i suoi messaggi? L'azione non si può annullare.`)) {
+      if (confirm(`Vuoi eliminare definitivamente il capitolo "${roomTitle}"?`)) {
         state.rooms = state.rooms.filter(r => r.id !== roomId);
         if (state.rooms.length === 0) {
           const defaultRoom = { id: 'r_' + Date.now(), title: 'Capitolo I', messages: [] };
@@ -1233,7 +1100,7 @@
     }
 
     function deleteCharacter(charId, charName) {
-      if (confirm(`Vuoi davvero congedare l'eroe ${charName}?`)) {
+      if (confirm(`Vuoi congedare l'eroe ${charName}?`)) {
         state.characters = (state.characters || []).filter(c => c.id !== charId);
         const remaining = getMyCharacters();
         if (remaining.length === 0) {
@@ -1652,8 +1519,7 @@
         entry.avatar = char.avatar;
         entry.color = char.color;
       } else if (state.mode === 'ooc') {
-        const sender = currentPlayer ? `${currentPlayer} (OOC)` : 'OOC';
-        entry.author = sender;
+        entry.author = currentPlayer ? `${currentPlayer} (OOC)` : 'OOC';
       }
 
       if (!room.messages) room.messages = [];
@@ -1707,7 +1573,7 @@
     }
 
     function deleteMsg(id) {
-      if (confirm("Vuoi davvero cancellare questo messaggio?")) {
+      if (confirm("Vuoi cancellare questo messaggio?")) {
         if (editingMsgId === id) cancelEdit();
         const room = getRoom();
         room.messages = room.messages.filter(m => m.id !== id);
