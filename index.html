@@ -239,24 +239,15 @@
     .banner-bar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 85%; }
     .banner-bar button { background: none; border: none; color: var(--muted); font-size: 1.1rem; cursor: pointer; padding: 0 4px; }
 
-    /* STRISCIA CHI STA NARRANDO */
+    /* RIGA DI SCRITTURA */
     .typing-notice {
       display: none;
       align-items: center;
       gap: 6px;
-      background: rgba(212, 175, 55, 0.08);
-      border-left: 2.5px solid var(--gold);
-      padding: 4px 8px;
-      border-radius: 0 4px 4px 0;
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       font-style: italic;
       color: var(--gold);
-      letter-spacing: 0.4px;
-      animation: pulseGlow 1.8s infinite ease-in-out;
-    }
-    @keyframes pulseGlow {
-      0%, 100% { opacity: 0.65; }
-      50% { opacity: 1; }
+      padding: 2px 4px;
     }
 
     .char-bar {
@@ -476,12 +467,12 @@
         <button id="cancelSceneBtn">&#x2715;</button>
       </div>
 
-      <!-- AVVISO ELEGANTE DI SCRITTURA -->
-      <div class="typing-notice" id="typingNotice">
-        <span>&#x2726;</span> <span id="typingNoticeText">sta narrando...</span>
-      </div>
-
       <div class="char-bar" id="charBar"></div>
+
+      <!-- VISUALIZZATORE DIGITAZIONE -->
+      <div class="typing-notice" id="typingNotice">
+        ✍️ <span id="typingNoticeText"></span>
+      </div>
       
       <div class="input-row">
         <div class="tools-column">
@@ -623,7 +614,7 @@
       });
     } catch(e) {}
 
-    let currentPlayer = (localStorage.getItem(PLAYER_KEY) || '').trim();
+    let currentPlayer = (localStorage.getItem(PLAYER_KEY) || 'Enea').trim();
 
     const firebaseConfig = {
       databaseURL: "https://rp-session-default-rtdb.europe-west1.firebasedatabase.app"
@@ -631,10 +622,11 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const dbRef = db.ref('rp_live_chronicles');
-    const typingRootRef = db.ref('rp_typing');
+    const typingRootRef = db.ref('rp_typing_status');
 
     let typingTimeout = null;
     let currentTypingQuery = null;
+    let remoteTypingText = '';
 
     const SCENARIOS = [
       {
@@ -824,6 +816,16 @@
       return myChars.find(c => c.id === state.activeChar) || myChars[0];
     }
 
+    function getActiveWriterName() {
+      if (state.mode === 'ic') {
+        const c = getChar();
+        if (c && c.name) return c.name;
+      } else if (state.mode === 'narrator') {
+        return 'Narratore';
+      }
+      return currentPlayer || 'Qualcuno';
+    }
+
     function resetMobileViewport() {
       window.scrollTo(0, 0);
       document.body.scrollTop = 0;
@@ -850,29 +852,34 @@
     }
 
     function getSafePlayerKey() {
-      if (!currentPlayer) return 'anon';
-      return encodeURIComponent(currentPlayer.toLowerCase().trim()).replace(/\./g, '_');
+      const name = currentPlayer || 'anonimo';
+      return encodeURIComponent(name.toLowerCase().trim()).replace(/\./g, '_');
     }
 
-    /* TRASMISSIONE STATO DIGITAZIONE */
+    function refreshTypingDisplay() {
+      const input = document.getElementById('entryInput');
+      const notice = document.getElementById('typingNotice');
+      const text = document.getElementById('typingNoticeText');
+
+      if (input && input.value.trim().length > 0) {
+        text.textContent = `(${getActiveWriterName()}) sta scrivendo...`;
+        notice.style.display = 'flex';
+      } else if (remoteTypingText) {
+        text.textContent = remoteTypingText;
+        notice.style.display = 'flex';
+      } else {
+        notice.style.display = 'none';
+      }
+    }
+
     function setTypingStatus(isTyping) {
-      if (!currentPlayer) return;
       const room = getRoom();
       const ref = typingRootRef.child(room.id).child(getSafePlayerKey());
 
       if (isTyping) {
-        let label = currentPlayer;
-        if (state.mode === 'ic') {
-          const char = getChar();
-          if (char && char.name) label = char.name;
-        } else if (state.mode === 'narrator') {
-          label = "Il Narratore";
-        }
-
         ref.set({
           user: currentPlayer,
-          label: label,
-          mode: state.mode,
+          label: getActiveWriterName(),
           time: Date.now()
         });
         ref.onDisconnect().remove();
@@ -883,19 +890,23 @@
 
     function handleTypingInput() {
       const input = document.getElementById('entryInput');
-      if (input.value.trim().length > 0) {
+      const hasText = input.value.trim().length > 0;
+
+      refreshTypingDisplay();
+
+      if (hasText) {
         setTypingStatus(true);
         if (typingTimeout) clearTimeout(typingTimeout);
         typingTimeout = setTimeout(() => {
           setTypingStatus(false);
-        }, 3000);
+          refreshTypingDisplay();
+        }, 2800);
       } else {
         if (typingTimeout) clearTimeout(typingTimeout);
         setTypingStatus(false);
       }
     }
 
-    /* ASCOLTO DIGITAZIONE ALTRI GIOCATORI */
     function listenToTyping() {
       if (currentTypingQuery) currentTypingQuery.off();
       const room = getRoom();
@@ -904,27 +915,19 @@
       currentTypingQuery.on('value', (snap) => {
         const data = snap.val() || {};
         const now = Date.now();
-        const activeWriters = [];
+        const others = [];
 
         Object.keys(data).forEach(k => {
           const item = data[k];
           if (item && item.user && item.user.toLowerCase().trim() !== (currentPlayer || '').toLowerCase().trim()) {
-            if (now - item.time < 5000) {
-              const verb = item.mode === 'ooc' ? 'sta scrivendo...' : 'sta narrando...';
-              activeWriters.push(`${item.label || item.user} ${verb}`);
+            if (now - (item.time || 0) < 5000) {
+              others.push(`(${item.label || item.user}) sta scrivendo...`);
             }
           }
         });
 
-        const noticeBox = document.getElementById('typingNotice');
-        const noticeText = document.getElementById('typingNoticeText');
-
-        if (activeWriters.length > 0) {
-          noticeText.textContent = activeWriters.join(' • ');
-          noticeBox.style.display = 'flex';
-        } else {
-          noticeBox.style.display = 'none';
-        }
+        remoteTypingText = others.join(' • ');
+        refreshTypingDisplay();
       });
     }
 
@@ -1024,12 +1027,7 @@
     }
 
     function init() {
-      if (!currentPlayer) {
-        setTimeout(openPlayerModal, 250);
-      } else {
-        updatePlayerUI();
-      }
-
+      updatePlayerUI();
       renderRooms();
       renderCharBar();
       renderStory();
@@ -1615,6 +1613,7 @@
 
       if (typingTimeout) clearTimeout(typingTimeout);
       setTypingStatus(false);
+      refreshTypingDisplay();
 
       const room = getRoom();
 
