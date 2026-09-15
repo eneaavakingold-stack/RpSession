@@ -1,8 +1,16 @@
-"icons": [
+{
+  "name": "Chronicles",
+  "short_name": "Chronicles",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#070504",
+  "theme_color": "#070504",
+  "icons": [
     {
-      "src": "icon.svg",
+      "src": "icon.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
+}
