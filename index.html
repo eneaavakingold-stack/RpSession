@@ -5,6 +5,15 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
   <title>Chronicles - RP</title>
+  
+  <!-- PWA & SUPPORTO IPHONE -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#070504">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Chronicles">
+  <link rel="apple-touch-icon" href="https://api.dicebear.com/7.x/identicon/svg?seed=Chronicles">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
@@ -697,7 +706,7 @@
       
       <div class="drawer-body">
         <button class="drawer-btn" style="border: 1px solid var(--gold); background: rgba(212, 175, 55, 0.12);" onclick="openPlayerModal()">&#x1F464; Profilo: <b id="drawerPlayerName" style="color:var(--gold);">...</b></button>
-        <button class="drawer-btn" id="btnNotifToggle" onclick="requestNotificationPermission()">🔔 Notifiche: <span id="notifStatusText" style="color:var(--gold);">Verifica...</span></button>
+        <button class="drawer-btn" id="btnNotifyPermission" style="border: 1px dashed var(--gold); color:var(--gold);" onclick="requestNotifyPermission()">🔔 Notifiche Audio & Banner</button>
         
         <div style="padding:10px 12px 2px; font-size:0.7rem; color:var(--gold); font-family:'Cinzel', serif;">ATTESA & MINIGIOCHI</div>
         <button class="drawer-btn" style="color:var(--gold);" onclick="openStarsModal()">✨ Costellazioni Celesti</button>
@@ -721,7 +730,7 @@
     </div>
   </div>
 
-  <!-- MODALE 1: COSTELLAZIONI CELESTI -->
+  <!-- MODALI -->
   <div class="modal-overlay" id="starsModal" onclick="closeModals()">
     <div class="modal-sheet" style="align-items:center;" onclick="event.stopPropagation()">
       <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
@@ -740,7 +749,6 @@
     </div>
   </div>
 
-  <!-- MODALE 2: FORGIA ALCHEMICA -->
   <div class="modal-overlay" id="alchemyModal" onclick="closeModals()">
     <div class="modal-sheet" style="align-items:center;" onclick="event.stopPropagation()">
       <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
@@ -773,7 +781,6 @@
     </div>
   </div>
 
-  <!-- MODALE 3: ARENA TATTICA -->
   <div class="modal-overlay" id="battlerModal" onclick="closeModals()">
     <div class="modal-sheet" style="align-items:center;" onclick="event.stopPropagation()">
       <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
@@ -788,7 +795,6 @@
       </div>
 
       <div class="ab-board" id="abBoard"></div>
-
       <div id="abStatusText" style="font-size:0.8rem; color:var(--muted); text-align:center; min-height:18px;">Schiera le tue truppe e inizia lo scontro!</div>
 
       <div style="width:100%; font-size:0.75rem; color:var(--gold); font-family:'Cinzel',serif; margin-top:2px;">RECLUTA EROI (3 ORO):</div>
@@ -801,7 +807,6 @@
     </div>
   </div>
 
-  <!-- MODALE NUOVO LUOGO & SFONDO -->
   <div class="modal-overlay" id="locationModal" onclick="closeModals()">
     <div class="modal-sheet" onclick="event.stopPropagation()">
       <h3>📍 Nuovo Luogo & Sfondo</h3>
@@ -823,7 +828,6 @@
     </div>
   </div>
 
-  <!-- MODALE PROFILO GIOCATORE -->
   <div class="modal-overlay" id="playerModal" style="z-index: 70; align-items: center; justify-content: center;" onclick="closePlayerModal()">
     <div class="modal-sheet" style="max-width: 320px; border-radius: 8px;" onclick="event.stopPropagation()">
       <h3>Nome Profilo</h3>
@@ -919,6 +923,11 @@
   </div>
 
   <script>
+    // REGISTRAZIONE SERVICE WORKER (PWA)
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
+    }
+
     const STORAGE_KEY = 'rp_v38_isolated_heroes';
     const PLAYER_KEY = 'rp_user_profile_name';
 
@@ -943,79 +952,9 @@
     let remoteTypingText = '';
     let selectedLocationBase64 = '';
     let isPeekMode = false;
-    let isInitialCloudLoad = true;
 
-    /* SISTEMA AUDIO, VIBRAZIONE E NOTIFICHE NATIVE */
-    function playFantasyChime() {
-      try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContext) return;
-        const ctx = new AudioContext();
-        const now = ctx.currentTime;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(587.33, now); // Re5
-        osc.frequency.exponentialRampToValueAtTime(880, now + 0.12); // La5
-
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start(now);
-        osc.stop(now + 0.75);
-      } catch (err) {}
-    }
-
-    function triggerNativeNotification(title, body) {
-      playFantasyChime();
-
-      if ('vibrate' in navigator) {
-        try { navigator.vibrate([120, 60, 120]); } catch (e) {}
-      }
-
-      if ('Notification' in window && Notification.permission === 'granted') {
-        try {
-          const n = new Notification(title, {
-            body: body.length > 75 ? body.substring(0, 72) + '...' : body,
-            icon: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=128&q=80'
-          });
-          n.onclick = () => { window.focus(); n.close(); };
-        } catch (e) {}
-      }
-    }
-
-    function requestNotificationPermission() {
-      if (!('Notification' in window)) {
-        alert("Questo dispositivo o browser non supporta le notifiche native.");
-        return;
-      }
-      playFantasyChime();
-      Notification.requestPermission().then(permission => {
-        updateNotifUI();
-        if (permission === 'granted') {
-          triggerNativeNotification("Chronicles", "Notifiche attivate con successo!");
-        }
-      });
-    }
-
-    function updateNotifUI() {
-      const label = document.getElementById('notifStatusText');
-      if (!label) return;
-      if (!('Notification' in window)) {
-        label.textContent = "Non supportate";
-        label.style.color = 'var(--red)';
-      } else if (Notification.permission === 'granted') {
-        label.textContent = "Attive ✓";
-        label.style.color = '#2ecc71';
-      } else {
-        label.textContent = "Tocca per attivare";
-        label.style.color = 'var(--gold)';
-      }
-    }
+    let lastSeenMsgCount = -1;
+    let audioCtx = null;
 
     const SCENARIOS = [
       { name: "Bosco Antico", match: ["bosco", "foresta", "alberi", "radura"], url: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=900&q=70" },
@@ -1036,33 +975,79 @@
     let startDragX = 0;
     let startDragY = 0;
 
+    function playChime() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const now = audioCtx.currentTime;
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+
+        gain.gain.setValueAtTime(0.28, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.7);
+      } catch(e) {}
+    }
+
+    function vibrateDevice() {
+      if ('vibrate' in navigator) {
+        try { navigator.vibrate([100, 60, 100]); } catch(e) {}
+      }
+    }
+
+    function requestNotifyPermission() {
+      playChime();
+      if ('Notification' in window) {
+        Notification.requestPermission().then(permission => {
+          const btn = document.getElementById('btnNotifyPermission');
+          if (permission === 'granted') {
+            btn.textContent = "🔔 Notifiche Attive";
+            btn.style.color = "#2ecc71";
+            btn.style.borderColor = "#2ecc71";
+          } else {
+            btn.textContent = "🔕 Notifiche Bloccate";
+            btn.style.color = "var(--red)";
+          }
+        });
+      } else {
+        alert("Il tuo browser non supporta le notifiche di sistema.");
+      }
+    }
+
+    function triggerIncomingNotification(msg) {
+      playChime();
+      vibrateDevice();
+
+      if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
+        const title = msg.type === 'narrator' ? 'Il Narratore' : (msg.author || 'Nuovo messaggio');
+        let body = msg.text || '';
+        if (msg.type === 'scene') body = `⏳ ${msg.text}`;
+        else if (msg.type === 'location') body = `📍 ${msg.title || 'Nuovo luogo'}`;
+
+        try {
+          new Notification(title, {
+            body: body.substring(0, 95),
+            icon: msg.avatar || 'https://api.dicebear.com/7.x/identicon/svg?seed=Chronicles'
+          });
+        } catch(e) {}
+      }
+    }
+
     /* GIOCO 1: COSTELLAZIONI */
     const CONSTELLATIONS = [
-      {
-        name: "Cassiopea",
-        sub: "La Regina del Cielo del Nord — Tracciata nella volta stellata.",
-        stars: [{ x: 0.18, y: 0.65 }, { x: 0.35, y: 0.38 }, { x: 0.52, y: 0.55 }, { x: 0.70, y: 0.30 }, { x: 0.85, y: 0.45 }]
-      },
-      {
-        name: "Orsa Minore & Stella Polare",
-        sub: "La bussola dei viandanti — Il Piccolo Carro veglia sul nord.",
-        stars: [{ x: 0.85, y: 0.18 }, { x: 0.68, y: 0.32 }, { x: 0.52, y: 0.40 }, { x: 0.40, y: 0.52 }, { x: 0.42, y: 0.75 }, { x: 0.22, y: 0.78 }, { x: 0.20, y: 0.55 }, { x: 0.40, y: 0.52 }]
-      },
-      {
-        name: "Cigno (Croce del Nord)",
-        sub: "L'uccello sacro in volo eterno verso l'orizzonte argenteo.",
-        stars: [{ x: 0.50, y: 0.18 }, { x: 0.50, y: 0.50 }, { x: 0.18, y: 0.54 }, { x: 0.50, y: 0.50 }, { x: 0.82, y: 0.46 }, { x: 0.50, y: 0.50 }, { x: 0.50, y: 0.82 }]
-      },
-      {
-        name: "Lira (Vega)",
-        sub: "Lo strumento d'argento suonato da Orfeo nelle ombre.",
-        stars: [{ x: 0.32, y: 0.25 }, { x: 0.60, y: 0.28 }, { x: 0.72, y: 0.62 }, { x: 0.46, y: 0.78 }, { x: 0.36, y: 0.48 }, { x: 0.32, y: 0.25 }]
-      },
-      {
-        name: "Orione (La Cintura)",
-        sub: "Il cacciatore leggendario armato di spada tra i ghiacci.",
-        stars: [{ x: 0.25, y: 0.22 }, { x: 0.75, y: 0.26 }, { x: 0.62, y: 0.48 }, { x: 0.50, y: 0.50 }, { x: 0.38, y: 0.52 }, { x: 0.28, y: 0.82 }, { x: 0.72, y: 0.78 }]
-      }
+      { name: "Cassiopea", sub: "La Regina del Cielo del Nord.", stars: [{ x: 0.18, y: 0.65 }, { x: 0.35, y: 0.38 }, { x: 0.52, y: 0.55 }, { x: 0.70, y: 0.30 }, { x: 0.85, y: 0.45 }] },
+      { name: "Orsa Minore & Polare", sub: "La bussola eterna dei viandanti.", stars: [{ x: 0.85, y: 0.18 }, { x: 0.68, y: 0.32 }, { x: 0.52, y: 0.40 }, { x: 0.40, y: 0.52 }, { x: 0.42, y: 0.75 }, { x: 0.22, y: 0.78 }, { x: 0.20, y: 0.55 }, { x: 0.40, y: 0.52 }] },
+      { name: "Cigno (Croce del Nord)", sub: "L'uccello sacro in volo eterno.", stars: [{ x: 0.50, y: 0.18 }, { x: 0.50, y: 0.50 }, { x: 0.18, y: 0.54 }, { x: 0.50, y: 0.50 }, { x: 0.82, y: 0.46 }, { x: 0.50, y: 0.50 }, { x: 0.50, y: 0.82 }] },
+      { name: "Lira (Vega)", sub: "Lo strumento d'argento di Orfeo.", stars: [{ x: 0.32, y: 0.25 }, { x: 0.60, y: 0.28 }, { x: 0.72, y: 0.62 }, { x: 0.46, y: 0.78 }, { x: 0.36, y: 0.48 }, { x: 0.32, y: 0.25 }] },
+      { name: "Orione (Cintura)", sub: "Il cacciatore leggendario tra i ghiacci.", stars: [{ x: 0.25, y: 0.22 }, { x: 0.75, y: 0.26 }, { x: 0.62, y: 0.48 }, { x: 0.50, y: 0.50 }, { x: 0.38, y: 0.52 }, { x: 0.28, y: 0.82 }, { x: 0.72, y: 0.78 }] }
     ];
 
     let currentConstIndex = 0;
@@ -1241,7 +1226,6 @@
         chip.onclick = () => selectAlchemyElement(el);
         inv.appendChild(chip);
       });
-
       document.getElementById('alcCountLabel').textContent = `${unlockedElements.length} / 25`;
       updateAlcSlotUI();
     }
@@ -1514,7 +1498,6 @@
       renderAbUI();
     }
 
-    /* GESTIONE CHAT RP & DATABASE */
     const DEFAULT_DATA = {
       characters: [],
       rooms: [{ id: 'r1', title: 'Capitolo I: Nel Bosco Antico', messages: [], bgUrl: '', bgTitle: '' }],
@@ -1692,7 +1675,6 @@
     function updatePlayerUI() {
       const dLabel = document.getElementById('drawerPlayerName');
       if (dLabel) dLabel.textContent = currentPlayer || 'Tocca per impostare';
-      updateNotifUI();
     }
 
     function openPlayerModal() {
@@ -1829,7 +1811,6 @@
         handleStarClick(e.clientX, e.clientY);
       });
 
-      // CARICAMENTO FOTO LUOGO
       const locFile = document.getElementById('locFileInput');
       locFile.onclick = function() { this.value = null; };
       locFile.onchange = function(e) {
@@ -1849,7 +1830,6 @@
         });
       };
 
-      // CARICAMENTO AVATAR
       const fileInput = document.getElementById('cFile');
       fileInput.onclick = function() { this.value = null; };
       fileInput.onchange = function(e) {
@@ -1867,16 +1847,12 @@
 
       initTouchCropEvents();
 
-      // ASCOLTO CLOUD FIREBASE CON CONTROLLO NOTIFICHE IN ENTRATA
       dbRef.on('value', (snap) => {
         const cloudData = snap.val();
         const status = document.getElementById('cloudStatus');
         status.classList.add('live');
 
         if (cloudData && cloudData.rooms) {
-          const oldRoom = getRoom();
-          const oldMsgCount = (oldRoom.messages || []).length;
-
           state = cloudData;
           try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
           renderRooms();
@@ -1884,27 +1860,21 @@
           renderStory();
 
           const currentR = getRoom();
+          const msgs = currentR.messages || [];
+
+          if (lastSeenMsgCount !== -1 && msgs.length > lastSeenMsgCount) {
+            const latest = msgs[msgs.length - 1];
+            if (latest && latest.author && latest.author.toLowerCase().trim() !== currentPlayer.toLowerCase().trim()) {
+              triggerIncomingNotification(latest);
+            }
+          }
+          lastSeenMsgCount = msgs.length;
+
           if (currentR && currentR.bgUrl) {
             triggerAmbient(currentR.bgUrl, currentR.bgTitle);
           }
-
-          // NOTIFICA PER NUOVI MESSAGGI DELL'ALTRO GIOCATORE
-          const newMsgCount = (currentR.messages || []).length;
-          if (!isInitialCloudLoad && newMsgCount > oldMsgCount) {
-            const lastMsg = currentR.messages[newMsgCount - 1];
-            const senderName = lastMsg.author || '';
-            const isMe = senderName.toLowerCase().trim() === (currentPlayer || '').toLowerCase().trim();
-
-            if (!isMe) {
-              const previewText = lastMsg.type === 'scene' ? `— ${lastMsg.text} —` : (lastMsg.text || 'Nuovo messaggio');
-              triggerNativeNotification(senderName || "Nuovo Messaggio RP", previewText);
-            }
-          }
-
-          isInitialCloudLoad = false;
         } else {
           syncAll();
-          isInitialCloudLoad = false;
         }
       });
     }
