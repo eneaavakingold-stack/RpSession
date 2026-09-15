@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#241a12"/>
+      <stop offset="65%" stop-color="#0e0a07"/>
+      <stop offset="100%" stop-color="#040302"/>
+    </radialGradient>
+    <linearGradient id="goldLinear" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fae8a8"/>
+      <stop offset="40%" stop-color="#d4af37"/>
+      <stop offset="80%" stop-color="#9a7822"/>
+      <stop offset="100%" stop-color="#5a4511"/>
+    </linearGradient>
+    <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Sfondo squircle scuro -->
+  <rect width="512" height="512" rx="115" fill="url(#bgGrad)"/>
+
+  <!-- Anelli cerimoniali esterni -->
+  <circle cx="256" cy="256" r="226" fill="none" stroke="url(#goldLinear)" stroke-width="3" opacity="0.4"/>
+  <circle cx="256" cy="256" r="214" fill="none" stroke="url(#goldLinear)" stroke-width="2" stroke-dasharray="8 8" opacity="0.6"/>
+  <circle cx="256" cy="256" r="198" fill="none" stroke="url(#goldLinear)" stroke-width="3.5"/>
+
+  <!-- Nottoline cardinali -->
+  <circle cx="256" cy="42" r="5" fill="#fae8a8"/>
+  <circle cx="256" cy="470" r="5" fill="#fae8a8"/>
+  <circle cx="42" cy="256" r="5" fill="#fae8a8"/>
+  <circle cx="470" cy="256" r="5" fill="#fae8a8"/>
+
+  <!-- Stella arcana superiore -->
+  <g filter="url(#goldGlow)">
+    <path d="M 256 95 L 263 138 L 298 145 L 263 152 L 256 195 L 249 152 L 214 145 L 249 138 Z" fill="url(#goldLinear)"/>
+    <path d="M 256 115 L 260 139 L 282 145 L 260 151 L 256 175 L 252 151 L 230 145 L 252 139 Z" fill="#ffffff" opacity="0.7"/>
+  </g>
+
+  <!-- Tomo antico dorato -->
+  <g filter="url(#goldGlow)">
+    <!-- Rilegatura e spessore -->
+    <path d="M 120 376 C 180 358 235 362 256 384 C 277 362 332 358 392 376 L 392 388 C 332 370 277 374 256 396 C 235 374 180 370 120 388 Z" fill="#5a4511"/>
+    
+    <!-- Pagine aperte -->
+    <path d="M 124 235 C 180 218 235 224 256 244 L 256 376 C 235 356 180 350 124 368 Z" fill="url(#goldLinear)"/>
+    <path d="M 388 235 C 332 218 277 224 256 244 L 256 376 C 277 356 332 350 388 368 Z" fill="url(#goldLinear)"/>
+
+    <!-- Bordi interni pagina -->
+    <path d="M 136 246 C 185 233 230 238 248 254 L 248 362 C 230 346 185 341 136 354 Z" fill="#18120c"/>
+    <path d="M 376 246 C 327 233 282 238 264 254 L 264 362 C 282 346 327 341 376 354 Z" fill="#18120c"/>
+
+    <!-- Lettere R e P -->
+    <text x="192" y="324" font-family="'Cinzel', Georgia, serif" font-size="76" font-weight="bold" fill="url(#goldLinear)" text-anchor="middle">R</text>
+    <text x="320" y="324" font-family="'Cinzel', Georgia, serif" font-size="76" font-weight="bold" fill="url(#goldLinear)" text-anchor="middle">P</text>
+
+    <!-- Nastro segnalibro -->
+    <path d="M 253 244 L 253 410 L 261 400 L 269 410 L 269 244 Z" fill="#c0392b"/>
+  </g>
+</svg>
