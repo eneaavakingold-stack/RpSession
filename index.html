@@ -577,7 +577,7 @@
     }
     .alchemy-chip:active { background: rgba(212, 175, 55, 0.25); }
 
-    /* GIOCO 3: ARENA TATTICA (AUTO-BATTLER) */
+    /* GIOCO 3: ARENA TATTICA */
     .ab-header {
       display: flex;
       justify-content: space-between;
@@ -697,6 +697,7 @@
       
       <div class="drawer-body">
         <button class="drawer-btn" style="border: 1px solid var(--gold); background: rgba(212, 175, 55, 0.12);" onclick="openPlayerModal()">&#x1F464; Profilo: <b id="drawerPlayerName" style="color:var(--gold);">...</b></button>
+        <button class="drawer-btn" id="btnNotifToggle" onclick="requestNotificationPermission()">🔔 Notifiche: <span id="notifStatusText" style="color:var(--gold);">Verifica...</span></button>
         
         <div style="padding:10px 12px 2px; font-size:0.7rem; color:var(--gold); font-family:'Cinzel', serif;">ATTESA & MINIGIOCHI</div>
         <button class="drawer-btn" style="color:var(--gold);" onclick="openStarsModal()">✨ Costellazioni Celesti</button>
@@ -772,7 +773,7 @@
     </div>
   </div>
 
-  <!-- MODALE 3: ARENA TATTICA (AUTO-BATTLER) -->
+  <!-- MODALE 3: ARENA TATTICA -->
   <div class="modal-overlay" id="battlerModal" onclick="closeModals()">
     <div class="modal-sheet" style="align-items:center;" onclick="event.stopPropagation()">
       <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
@@ -942,6 +943,79 @@
     let remoteTypingText = '';
     let selectedLocationBase64 = '';
     let isPeekMode = false;
+    let isInitialCloudLoad = true;
+
+    /* SISTEMA AUDIO, VIBRAZIONE E NOTIFICHE NATIVE */
+    function playFantasyChime() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, now); // Re5
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.12); // La5
+
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.75);
+      } catch (err) {}
+    }
+
+    function triggerNativeNotification(title, body) {
+      playFantasyChime();
+
+      if ('vibrate' in navigator) {
+        try { navigator.vibrate([120, 60, 120]); } catch (e) {}
+      }
+
+      if ('Notification' in window && Notification.permission === 'granted') {
+        try {
+          const n = new Notification(title, {
+            body: body.length > 75 ? body.substring(0, 72) + '...' : body,
+            icon: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=128&q=80'
+          });
+          n.onclick = () => { window.focus(); n.close(); };
+        } catch (e) {}
+      }
+    }
+
+    function requestNotificationPermission() {
+      if (!('Notification' in window)) {
+        alert("Questo dispositivo o browser non supporta le notifiche native.");
+        return;
+      }
+      playFantasyChime();
+      Notification.requestPermission().then(permission => {
+        updateNotifUI();
+        if (permission === 'granted') {
+          triggerNativeNotification("Chronicles", "Notifiche attivate con successo!");
+        }
+      });
+    }
+
+    function updateNotifUI() {
+      const label = document.getElementById('notifStatusText');
+      if (!label) return;
+      if (!('Notification' in window)) {
+        label.textContent = "Non supportate";
+        label.style.color = 'var(--red)';
+      } else if (Notification.permission === 'granted') {
+        label.textContent = "Attive ✓";
+        label.style.color = '#2ecc71';
+      } else {
+        label.textContent = "Tocca per attivare";
+        label.style.color = 'var(--gold)';
+      }
+    }
 
     const SCENARIOS = [
       { name: "Bosco Antico", match: ["bosco", "foresta", "alberi", "radura"], url: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=900&q=70" },
@@ -1618,6 +1692,7 @@
     function updatePlayerUI() {
       const dLabel = document.getElementById('drawerPlayerName');
       if (dLabel) dLabel.textContent = currentPlayer || 'Tocca per impostare';
+      updateNotifUI();
     }
 
     function openPlayerModal() {
@@ -1754,7 +1829,7 @@
         handleStarClick(e.clientX, e.clientY);
       });
 
-      // CARICAMENTO SICURO FOTO LUOGO
+      // CARICAMENTO FOTO LUOGO
       const locFile = document.getElementById('locFileInput');
       locFile.onclick = function() { this.value = null; };
       locFile.onchange = function(e) {
@@ -1774,7 +1849,7 @@
         });
       };
 
-      // CARICAMENTO SICURO AVATAR
+      // CARICAMENTO AVATAR
       const fileInput = document.getElementById('cFile');
       fileInput.onclick = function() { this.value = null; };
       fileInput.onchange = function(e) {
@@ -1792,12 +1867,16 @@
 
       initTouchCropEvents();
 
+      // ASCOLTO CLOUD FIREBASE CON CONTROLLO NOTIFICHE IN ENTRATA
       dbRef.on('value', (snap) => {
         const cloudData = snap.val();
         const status = document.getElementById('cloudStatus');
         status.classList.add('live');
 
         if (cloudData && cloudData.rooms) {
+          const oldRoom = getRoom();
+          const oldMsgCount = (oldRoom.messages || []).length;
+
           state = cloudData;
           try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
           renderRooms();
@@ -1808,13 +1887,28 @@
           if (currentR && currentR.bgUrl) {
             triggerAmbient(currentR.bgUrl, currentR.bgTitle);
           }
+
+          // NOTIFICA PER NUOVI MESSAGGI DELL'ALTRO GIOCATORE
+          const newMsgCount = (currentR.messages || []).length;
+          if (!isInitialCloudLoad && newMsgCount > oldMsgCount) {
+            const lastMsg = currentR.messages[newMsgCount - 1];
+            const senderName = lastMsg.author || '';
+            const isMe = senderName.toLowerCase().trim() === (currentPlayer || '').toLowerCase().trim();
+
+            if (!isMe) {
+              const previewText = lastMsg.type === 'scene' ? `— ${lastMsg.text} —` : (lastMsg.text || 'Nuovo messaggio');
+              triggerNativeNotification(senderName || "Nuovo Messaggio RP", previewText);
+            }
+          }
+
+          isInitialCloudLoad = false;
         } else {
           syncAll();
+          isInitialCloudLoad = false;
         }
       });
     }
 
-    /* COMPRESSORE LEGGERO A ZERO MEMORIA */
     function compressAndLoadImage(file, maxW, maxH, quality, callback) {
       const blobUrl = URL.createObjectURL(file);
       const tempImg = new Image();
