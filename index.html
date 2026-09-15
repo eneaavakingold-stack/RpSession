@@ -15,15 +15,16 @@
 
   <style>
     :root {
-      --bg: #090705;
-      --card-bg: rgba(20, 16, 12, 0.94);
-      --panel: rgba(18, 14, 11, 0.98);
-      --border: rgba(212, 175, 55, 0.22);
-      --text: #ecdcc1;
-      --muted: #a19179;
+      --bg: #070504;
+      --card-bg: rgba(10, 7, 5, 0.32);
+      --panel: rgba(10, 7, 5, 0.75);
+      --border: rgba(212, 175, 55, 0.32);
+      --text: #f5e8d3;
+      --muted: #c4b39b;
       --gold: #d4af37;
+      --gold-dark: #8c7322;
       --green: #2e8b57;
-      --red: #b32626;
+      --red: #c0392b;
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
 
@@ -62,7 +63,7 @@
       transform: translateZ(0);
     }
     #bg-overlay {
-      background: radial-gradient(circle, rgba(14,10,7,0.55) 0%, rgba(6,4,3,0.80) 100%);
+      background: radial-gradient(circle, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.40) 100%);
       z-index: 1;
     }
 
@@ -79,6 +80,8 @@
     header {
       height: 52px;
       background: var(--panel);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
@@ -99,6 +102,12 @@
       letter-spacing: 0.8px;
     }
     .ambient-tag { font-size: 0.65rem; color: var(--muted); font-style: italic; }
+
+    .header-right-tools {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
     .cloud-status {
       width: 8px;
@@ -121,23 +130,27 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
+      transition: opacity 0.25s ease;
     }
 
     .tome-card {
       background: var(--card-bg);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       border: 1px solid var(--border);
-      border-radius: 5px;
+      border-radius: 6px;
       padding: 6px 10px 8px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.45);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.95), 0 0 6px rgba(0,0,0,0.9);
     }
-    .tome-card.narrator-card { border-color: rgba(212, 175, 55, 0.45); }
-    .tome-card.ooc-card { opacity: 0.75; border-style: dashed; }
+    .tome-card.narrator-card { border-color: rgba(212, 175, 55, 0.5); }
+    .tome-card.ooc-card { opacity: 0.85; border-style: dashed; }
 
     .card-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid rgba(212, 175, 55, 0.12);
+      border-bottom: 1px solid rgba(212, 175, 55, 0.18);
       padding-bottom: 3px;
       margin-bottom: 4px;
     }
@@ -151,7 +164,7 @@
       border: none;
       color: var(--muted);
       cursor: pointer;
-      font-size: 0.82rem;
+      font-size: 0.85rem;
       padding: 2px 4px;
     }
     .card-actions button:hover { color: var(--gold); }
@@ -164,15 +177,41 @@
       flex-direction: column;
       gap: 3px;
     }
-    .action-text { color: #e5b078; font-style: italic; }
-    .thought-text { color: #9bb1c9; font-style: italic; }
+    .action-text { color: #e8b682; font-style: italic; }
+    .thought-text { color: #a4c0db; font-style: italic; }
+
+    .location-img-box {
+      width: 100%;
+      height: 130px;
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid var(--gold);
+      position: relative;
+      cursor: pointer;
+      margin-top: 3px;
+    }
+    .location-img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.25s ease;
+    }
+    .location-img-box:hover img { transform: scale(1.02); }
+    .location-caption {
+      font-family: 'Cinzel', serif;
+      font-size: 0.88rem;
+      color: var(--gold);
+      padding: 5px 2px 2px;
+      letter-spacing: 0.5px;
+    }
 
     .dialogue-row {
       display: flex;
       align-items: flex-start;
       gap: 7px;
       border-left: 3px solid var(--dialogue-col, var(--gold));
-      background: rgba(255, 255, 255, 0.03);
+      background: rgba(0, 0, 0, 0.22);
       padding: 4px 7px;
       margin: 1px 0;
       border-radius: 0 4px 4px 0;
@@ -200,20 +239,37 @@
     }
 
     .tome-scene {
-      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       font-family: 'Cinzel Decorative', serif;
       color: var(--gold);
-      font-size: 0.78rem;
-      letter-spacing: 2px;
-      padding: 6px 12px;
-      margin: 2px 0;
-      background: rgba(14, 10, 7, 0.7);
+      font-size: 0.8rem;
+      letter-spacing: 1.5px;
+      padding: 5px 8px;
+      margin: 3px 0;
+      background: rgba(10, 7, 5, 0.4);
+      backdrop-filter: blur(4px);
       border-top: 1px double var(--border);
       border-bottom: 1px double var(--border);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.95);
     }
+    .scene-text { flex: 1; text-align: center; padding: 0 6px; }
+    .scene-actions { display: flex; gap: 6px; }
+    .scene-actions button {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 2px 4px;
+    }
+    .scene-actions button:hover { color: var(--gold); }
 
     footer {
       background: var(--panel);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       border-top: 1px solid var(--border);
       padding: 6px 10px calc(8px + var(--safe-bottom));
       display: flex;
@@ -261,18 +317,19 @@
       gap: 6px;
       padding: 4px 10px;
       border-radius: 4px;
-      background: rgba(212, 175, 55, 0.05);
+      background: rgba(212, 175, 55, 0.08);
       border: 1px solid var(--border);
       cursor: pointer;
       flex-shrink: 0;
       font-family: 'Cinzel', serif;
       font-size: 0.72rem;
+      backdrop-filter: blur(3px);
     }
     .char-tag img { width: 18px; height: 18px; border-radius: 50%; object-fit: cover; }
-    .char-tag.active { background: rgba(212, 175, 55, 0.2); border-color: currentColor; }
+    .char-tag.active { background: rgba(212, 175, 55, 0.25); border-color: currentColor; }
 
     .mode-tag {
-      background: transparent;
+      background: rgba(0, 0, 0, 0.25);
       border: 1px dashed var(--border);
       color: var(--muted);
       padding: 4px 8px;
@@ -282,7 +339,7 @@
       flex-shrink: 0;
       font-family: 'Cinzel', serif;
     }
-    .mode-tag.active { border-style: solid; color: var(--gold); border-color: var(--gold); }
+    .mode-tag.active { border-style: solid; color: var(--gold); border-color: var(--gold); background: rgba(212, 175, 55, 0.15); }
 
     .input-row {
       display: flex;
@@ -301,7 +358,7 @@
     .tools-column .tool-btn {
       flex: 1;
       width: 100%;
-      background: rgba(212, 175, 55, 0.05);
+      background: rgba(0, 0, 0, 0.35);
       border: 1px solid var(--border);
       color: var(--gold);
       border-radius: 4px;
@@ -321,7 +378,9 @@
       min-height: 76px;
       height: 76px;
       max-height: 45vh;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
       border: 1px solid var(--border);
       border-radius: 4px;
       color: var(--text);
@@ -339,35 +398,90 @@
       width: 48px;
       height: 76px;
       flex-shrink: 0;
-      background: var(--green);
-      border: 1px solid rgba(255,255,255,0.15);
-      color: #fff;
+      background: linear-gradient(145deg, #e3c059, #b58d1f);
+      border: 1px solid rgba(255, 215, 0, 0.4);
+      color: #0d0905;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.4);
       border-radius: 4px;
       cursor: pointer;
       font-size: 1.25rem;
+      font-weight: bold;
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: filter 0.15s ease, transform 0.1s ease;
     }
+    .btn-send:active { transform: scale(0.96); filter: brightness(0.9); }
 
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.8);
+      background: rgba(0,0,0,0.85);
       z-index: 30;
       display: none;
       align-items: flex-end;
     }
     .drawer-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 20; display: none; }
-    .drawer { position: fixed; top: 0; bottom: 0; left: 0; width: 280px; background: #110d0a; border-right: 1px solid var(--border); z-index: 21; display: flex; flex-direction: column; }
-    .drawer-header { padding: 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    
+    .drawer {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 285px;
+      max-width: 85vw;
+      background: #110d0a;
+      border-right: 1px solid var(--border);
+      z-index: 21;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .drawer-header {
+      padding: 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
     .drawer-header h2 { font-family: 'Cinzel Decorative', serif; font-size: 1.1rem; color: var(--gold); }
-    .drawer-btn { background: rgba(212, 175, 55, 0.06); border: 1px solid var(--border); color: var(--text); padding: 10px; margin: 5px 12px 0; border-radius: 4px; text-align: left; font-family: 'Cinzel', serif; font-size: 0.8rem; cursor: pointer; }
-    .drawer-list { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 4px; }
-    .drawer-item { padding: 8px 10px; border-radius: 4px; cursor: pointer; font-size: 0.95rem; display: flex; justify-content: space-between; align-items: center; }
+    
+    .drawer-body {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: calc(24px + var(--safe-bottom));
+    }
+    .drawer-btn {
+      flex-shrink: 0;
+      background: rgba(212, 175, 55, 0.06);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px;
+      margin: 5px 12px 0;
+      border-radius: 4px;
+      text-align: left;
+      font-family: 'Cinzel', serif;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .drawer-list { padding: 4px 12px; display: flex; flex-direction: column; gap: 4px; }
+    .drawer-item {
+      padding: 8px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
     .drawer-item.active { background: rgba(212,175,55,0.15); border-left: 2px solid var(--gold); color: var(--gold); }
 
-    .modal-sheet { width: 100%; max-height: 85vh; background: #16120e; border-radius: 8px 8px 0 0; border: 1px solid var(--border); padding: 18px 14px calc(14px + var(--safe-bottom)); display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+    .modal-sheet { width: 100%; max-height: 88vh; background: #16120e; border-radius: 8px 8px 0 0; border: 1px solid var(--border); padding: 16px 14px calc(14px + var(--safe-bottom)); display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
     .modal-sheet h3 { font-family: 'Cinzel Decorative', serif; color: var(--gold); font-size: 1rem; }
     .modal-sheet input, .modal-sheet textarea { background: rgba(0,0,0,0.5); border: 1px solid var(--border); color: var(--text); padding: 8px; border-radius: 4px; font-family: 'IM Fell English', serif; font-size: 1rem; }
     .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
@@ -377,58 +491,151 @@
       background: var(--card-bg);
       border: 1px solid var(--gold);
       border-radius: 8px;
-      padding: 18px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 14px;
-      max-width: 88vw;
+      gap: 12px;
+      max-width: 90vw;
       box-shadow: 0 8px 32px rgba(0,0,0,0.9);
     }
     .avatar-view-card img {
-      width: 240px;
-      height: 240px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid var(--gold);
-      box-shadow: 0 0 20px rgba(212, 175, 55, 0.35);
+      max-width: 82vw;
+      max-height: 65vh;
+      border-radius: 6px;
+      object-fit: contain;
+      border: 1.5px solid var(--gold);
     }
-    .avatar-view-name {
-      font-family: 'Cinzel Decorative', serif;
-      font-size: 1.3rem;
-      font-weight: bold;
-      letter-spacing: 1px;
-      text-align: center;
-    }
+    .avatar-view-name { font-family: 'Cinzel Decorative', serif; font-size: 1.1rem; font-weight: bold; text-align: center; }
 
-    .cropper-box {
+    .cropper-box { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 4px 0; }
+    #cropCanvas { width: 240px; height: 240px; border-radius: 6px; background: #050403; touch-action: none; box-shadow: 0 4px 16px rgba(0,0,0,0.8); user-select: none; }
+    .zoom-slider-row { display: flex; align-items: center; gap: 10px; width: 240px; font-size: 0.8rem; color: var(--muted); font-family: 'Cinzel', serif; }
+    .zoom-slider-row input[type="range"] { flex: 1; accent-color: var(--gold); }
+
+    /* GIOCO 1: COSTELLAZIONI */
+    #starCanvas {
+      width: 100%;
+      height: 290px;
+      background: radial-gradient(circle at center, #0e1626 0%, #05080e 100%);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      touch-action: none;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+      display: block;
+    }
+    .star-info-box { text-align: center; display: flex; flex-direction: column; gap: 4px; min-height: 44px; }
+    .star-title { font-family: 'Cinzel Decorative', serif; color: var(--gold); font-size: 0.95rem; font-weight: bold; letter-spacing: 1px; }
+    .star-sub { font-size: 0.8rem; color: var(--muted); font-style: italic; }
+
+    /* GIOCO 2: FORGIA ALCHEMICA */
+    .alchemy-cauldron {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 10px;
+      background: rgba(0,0,0,0.4);
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      width: 100%;
+    }
+    .alchemy-slot {
+      width: 70px;
+      height: 70px;
+      border: 1px solid var(--gold);
+      border-radius: 6px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
-      margin: 4px 0;
+      justify-content: center;
+      font-size: 1.5rem;
+      background: rgba(212, 175, 55, 0.05);
+      cursor: pointer;
     }
-    #cropCanvas {
-      width: 240px;
-      height: 240px;
-      border-radius: 6px;
-      background: #050403;
-      touch-action: none;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.8);
-      user-select: none;
+    .alchemy-slot span { font-size: 0.65rem; color: var(--muted); margin-top: 2px; }
+    .alchemy-inventory {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      max-height: 180px;
+      overflow-y: auto;
+      width: 100%;
+      padding: 4px;
     }
-    .zoom-slider-row {
+    .alchemy-chip {
+      background: rgba(212, 175, 55, 0.08);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 4px;
+      padding: 5px 8px;
+      font-size: 0.82rem;
+      cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 10px;
-      width: 240px;
-      font-size: 0.8rem;
-      color: var(--muted);
-      font-family: 'Cinzel', serif;
+      gap: 5px;
     }
-    .zoom-slider-row input[type="range"] {
+    .alchemy-chip:active { background: rgba(212, 175, 55, 0.25); }
+
+    /* GIOCO 3: ARENA TATTICA (AUTO-BATTLER) */
+    .ab-header {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      font-family: 'Cinzel', serif;
+      font-size: 0.85rem;
+      color: var(--gold);
+      padding: 2px 4px;
+    }
+    .ab-board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+      width: 100%;
+      max-width: 310px;
+      margin: 4px auto;
+    }
+    .ab-cell {
+      aspect-ratio: 1;
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      border-radius: 4px;
+      background: rgba(0,0,0,0.35);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      font-size: 1.3rem;
+    }
+    .ab-cell.enemy-zone { border-color: rgba(192, 57, 43, 0.4); background: rgba(192, 57, 43, 0.06); }
+    .ab-cell.player-zone { border-color: rgba(46, 204, 113, 0.35); background: rgba(46, 204, 113, 0.06); }
+    .ab-hp-bar {
+      position: absolute;
+      bottom: 2px;
+      left: 3px;
+      right: 3px;
+      height: 3px;
+      background: #444;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .ab-hp-fill { height: 100%; background: #2ecc71; width: 100%; }
+    .ab-shop {
+      display: flex;
+      gap: 6px;
+      width: 100%;
+      justify-content: center;
+    }
+    .ab-card {
+      background: rgba(212, 175, 55, 0.08);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 6px 8px;
+      text-align: center;
+      font-size: 0.75rem;
+      cursor: pointer;
       flex: 1;
-      accent-color: var(--gold);
     }
   </style>
 </head>
@@ -445,7 +652,10 @@
         <div class="room-title" id="roomTitle">Capitolo I</div>
         <div class="ambient-tag" id="ambientTag">Atmosfera: Bosco Antico</div>
       </div>
-      <div class="cloud-status" id="cloudStatus" title="Stato connessione live"></div>
+      <div class="header-right-tools">
+        <button class="btn-header" id="btnPeek" onclick="togglePeekMode()" title="Mostra solo lo sfondo">&#x1F441;&#xFE0F;</button>
+        <div class="cloud-status" id="cloudStatus" title="Stato connessione live"></div>
+      </div>
     </header>
 
     <div id="story"></div>
@@ -484,17 +694,131 @@
         <h2>CHRONICLES</h2>
         <button class="btn-header" onclick="toggleDrawer(false)">&#x2715;</button>
       </div>
-      <button class="drawer-btn" style="border: 1px solid var(--gold); background: rgba(212, 175, 55, 0.12);" onclick="openPlayerModal()">&#x1F464; Profilo: <b id="drawerPlayerName" style="color:var(--gold);">...</b></button>
-      <button class="drawer-btn" onclick="openLore()">&#x1F4DC; Tomo della Lore</button>
-      <button class="drawer-btn" onclick="toggleSceneMode(); toggleDrawer(false);">&#x23F3; Salto Scena / Tempo</button>
-      <button class="drawer-btn" onclick="openNewCharModal()">&#x1F3AD; Forgia Nuovo Eroe</button>
-      <button class="drawer-btn" onclick="openManageCharsModal()">&#x1F465; Gestisci i Tuoi Eroi</button>
-      <button class="drawer-btn" onclick="openRoomModal()">+ Nuovo Capitolo</button>
-      <button class="drawer-btn" onclick="clearCurrentRoom()">&#x1F5D1; Svuota Questo Capitolo</button>
-      <button class="drawer-btn" style="color:var(--red);" onclick="deleteCurrentRoom()">&#x1F5D1; Elimina Questo Capitolo</button>
-      <button class="drawer-btn" onclick="exportStory()">&#x1F4BE; Esporta Cronaca</button>
-      <div style="padding:14px 12px 4px; font-size:0.7rem; color:var(--muted); font-family:'Cinzel', serif;">CAPITOLI & STANZE</div>
-      <div class="drawer-list" id="roomList"></div>
+      
+      <div class="drawer-body">
+        <button class="drawer-btn" style="border: 1px solid var(--gold); background: rgba(212, 175, 55, 0.12);" onclick="openPlayerModal()">&#x1F464; Profilo: <b id="drawerPlayerName" style="color:var(--gold);">...</b></button>
+        
+        <div style="padding:10px 12px 2px; font-size:0.7rem; color:var(--gold); font-family:'Cinzel', serif;">ATTESA & MINIGIOCHI</div>
+        <button class="drawer-btn" style="color:var(--gold);" onclick="openStarsModal()">✨ Costellazioni Celesti</button>
+        <button class="drawer-btn" style="color:#e5b078;" onclick="openAlchemyModal()">⚗️ Forgia Alchemica</button>
+        <button class="drawer-btn" style="color:#2ecc71;" onclick="openBattlerModal()">⚔️ Arena Tattica (Auto-Battler)</button>
+
+        <div style="padding:10px 12px 2px; font-size:0.7rem; color:var(--muted); font-family:'Cinzel', serif;">GESTIONE MONDO</div>
+        <button class="drawer-btn" onclick="openLocationModal()">&#x1F5BC; Nuovo Luogo & Sfondo</button>
+        <button class="drawer-btn" onclick="openLore()">&#x1F4DC; Tomo della Lore</button>
+        <button class="drawer-btn" onclick="toggleSceneMode(); toggleDrawer(false);">&#x23F3; Salto Scena / Tempo</button>
+        <button class="drawer-btn" onclick="openNewCharModal()">&#x1F3AD; Forgia Nuovo Eroe</button>
+        <button class="drawer-btn" onclick="openManageCharsModal()">&#x1F465; Gestisci i Tuoi Eroi</button>
+        <button class="drawer-btn" onclick="openRoomModal()">+ Nuovo Capitolo</button>
+        <button class="drawer-btn" onclick="clearCurrentRoom()">&#x1F5D1; Svuota Questo Capitolo</button>
+        <button class="drawer-btn" style="color:var(--red);" onclick="deleteCurrentRoom()">&#x1F5D1; Elimina Questo Capitolo</button>
+        <button class="drawer-btn" onclick="exportStory()">&#x1F4BE; Esporta Cronaca</button>
+        
+        <div style="padding:14px 12px 4px; font-size:0.7rem; color:var(--muted); font-family:'Cinzel', serif;">CAPITOLI & STANZE</div>
+        <div class="drawer-list" id="roomList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALE 1: COSTELLAZIONI CELESTI -->
+  <div class="modal-overlay" id="starsModal" onclick="closeModals()">
+    <div class="modal-sheet" style="align-items:center;" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+        <h3>✨ Il Firmamento degli Antichi</h3>
+        <button class="btn-header" onclick="closeModals()">&#x2715;</button>
+      </div>
+      <canvas id="starCanvas" width="320" height="290"></canvas>
+      <div class="star-info-box">
+        <div class="star-title" id="starNameLabel">Tocca la prima stella</div>
+        <div class="star-sub" id="starDescLabel">Unisci le stelle pulsanti per tracciare la costellazione...</div>
+      </div>
+      <div class="modal-actions" style="width:100%; justify-content:space-between;">
+        <button style="background:transparent; border:1px solid var(--border); color:var(--muted);" onclick="resetConstellation()">Ricomincia</button>
+        <button id="btnNextStar" style="background:var(--gold); border:none; color:#090705; font-weight:bold; display:none;" onclick="nextConstellation()">Prossima Stella →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALE 2: FORGIA ALCHEMICA -->
+  <div class="modal-overlay" id="alchemyModal" onclick="closeModals()">
+    <div class="modal-sheet" style="align-items:center;" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+        <h3>⚗️ Forgia Alchemica</h3>
+        <button class="btn-header" onclick="closeModals()">&#x2715;</button>
+      </div>
+      <p style="font-size:0.8rem; color:var(--muted); text-align:center;">Seleziona 2 elementi dal tomo e fondili per scoprire glifi segreti.</p>
+      
+      <div class="alchemy-cauldron">
+        <div class="alchemy-slot" id="alcSlot1" onclick="clearAlcSlot(1)">
+          <div id="alcSlot1Icon">?</div>
+          <span id="alcSlot1Name">Vuoto</span>
+        </div>
+        <div style="font-size:1.3rem; color:var(--gold);">+</div>
+        <div class="alchemy-slot" id="alcSlot2" onclick="clearAlcSlot(2)">
+          <div id="alcSlot2Icon">?</div>
+          <span id="alcSlot2Name">Vuoto</span>
+        </div>
+        <button style="padding:10px 14px; background:var(--gold); border:none; color:#000; font-weight:bold; border-radius:4px; font-family:'Cinzel',serif; cursor:pointer;" onclick="combineAlchemy()">FONDI</button>
+      </div>
+
+      <div id="alcResultMsg" style="font-size:0.82rem; color:var(--gold); min-height:18px; text-align:center;"></div>
+
+      <div style="width:100%; display:flex; justify-content:space-between; font-size:0.75rem; color:var(--muted); font-family:'Cinzel',serif;">
+        <span>ELEMENTI CONOSCIUTI:</span>
+        <span id="alcCountLabel">4 / 25</span>
+      </div>
+      
+      <div class="alchemy-inventory" id="alcInventory"></div>
+    </div>
+  </div>
+
+  <!-- MODALE 3: ARENA TATTICA (AUTO-BATTLER) -->
+  <div class="modal-overlay" id="battlerModal" onclick="closeModals()">
+    <div class="modal-sheet" style="align-items:center;" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+        <h3>⚔️ Arena Tattica</h3>
+        <button class="btn-header" onclick="closeModals()">&#x2715;</button>
+      </div>
+
+      <div class="ab-header">
+        <span>Ondata: <b id="abWaveLabel" style="color:#fff;">1</b></span>
+        <span>Oro: <b id="abGoldLabel" style="color:var(--gold);">10</b> 🪙</span>
+        <span>Vita: <b id="abHpLabel" style="color:#2ecc71;">20</b> ❤️</span>
+      </div>
+
+      <div class="ab-board" id="abBoard"></div>
+
+      <div id="abStatusText" style="font-size:0.8rem; color:var(--muted); text-align:center; min-height:18px;">Schiera le tue truppe e inizia lo scontro!</div>
+
+      <div style="width:100%; font-size:0.75rem; color:var(--gold); font-family:'Cinzel',serif; margin-top:2px;">RECLUTA EROI (3 ORO):</div>
+      <div class="ab-shop" id="abShop"></div>
+
+      <div class="modal-actions" style="width:100%; justify-content:space-between; margin-top:4px;">
+        <button style="background:transparent; border:1px solid var(--border); color:var(--muted);" onclick="resetAutoBattler()">Resetta Run</button>
+        <button id="abBattleBtn" style="background:linear-gradient(145deg, #e3c059, #b58d1f); border:none; color:#000; font-weight:bold; padding:8px 16px;" onclick="startAutoBattle()">COMBATTI</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALE NUOVO LUOGO & SFONDO -->
+  <div class="modal-overlay" id="locationModal" onclick="closeModals()">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <h3>📍 Nuovo Luogo & Sfondo</h3>
+      <p style="font-size:0.85rem; color:var(--muted); line-height:1.4;">Carica una foto dalla galleria: apparirà nella cronaca e diventerà lo sfondo della stanza per entrambi.</p>
+      
+      <button type="button" id="locChooseBtn" class="drawer-btn" style="margin:0; text-align:center; cursor:pointer;" onclick="document.getElementById('locFileInput').click()">&#x1F4F7; Scegli Foto dalla Galleria</button>
+      <input type="file" id="locFileInput" accept="image/*" style="display:none;">
+      
+      <div id="locPreviewBox" style="display:none; width:100%; max-height:140px; overflow:hidden; border-radius:4px; border:1px solid var(--gold);">
+        <img id="locPreviewImg" style="width:100%; height:100%; object-fit:cover; display:block;">
+      </div>
+
+      <input type="text" id="locCaptionInput" placeholder="Nome del luogo o descrizione...">
+      
+      <div class="modal-actions">
+        <button style="background:transparent; border:1px solid var(--border); color:var(--muted);" onclick="closeModals()">Annulla</button>
+        <button id="locSubmitBtn" style="background:var(--gold); border:none; color:#000; font-weight:bold;" onclick="publishLocation()">Condividi Luogo</button>
+      </div>
     </div>
   </div>
 
@@ -527,7 +851,7 @@
       <input type="text" id="cName" placeholder="Nome dell'Eroe">
       
       <div style="display:flex; align-items:center; gap:10px;">
-        <button type="button" class="drawer-btn" style="margin:0; flex:1; text-align:center; cursor:pointer; font-size:0.85rem;" onclick="document.getElementById('cFile').click()">&#x1F4F7; Foto dalla Galleria</button>
+        <button type="button" id="cChooseBtn" class="drawer-btn" style="margin:0; flex:1; text-align:center; cursor:pointer; font-size:0.85rem;" onclick="document.getElementById('cFile').click()">&#x1F4F7; Foto dalla Galleria</button>
         <input type="file" id="cFile" accept="image/*" style="display:none;">
         <img id="cPreview" style="width:38px; height:38px; border-radius:50%; object-fit:cover; display:none; border:1px solid var(--border);">
       </div>
@@ -558,7 +882,7 @@
 
   <div class="modal-overlay" id="avatarModal" style="z-index: 60; align-items: center; justify-content: center;" onclick="closeModals()">
     <div class="avatar-view-card" onclick="event.stopPropagation()">
-      <img id="avatarModalImg" src="" alt="Effigie">
+      <img id="avatarModalImg" src="" alt="Vista">
       <div id="avatarModalName" class="avatar-view-name"></div>
       <button class="drawer-btn" style="width:100%; text-align:center; margin:0;" onclick="closeModals()">Chiudi</button>
     </div>
@@ -616,34 +940,12 @@
     let typingTimeout = null;
     let currentTypingQuery = null;
     let remoteTypingText = '';
+    let selectedLocationBase64 = '';
+    let isPeekMode = false;
 
     const SCENARIOS = [
-      { name: "Portale Arcano / Varco Magico", match: ["portale", "varco", "fenditura", "teletrasporto", "vortice", "glifo dimensionale", "cerchio magico"], url: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=900&q=70" },
-      { name: "Bivio / Crocevia", match: ["bivio", "crocevia", "incrocio", "due strade", "strade si dividono", "sentiero si divide", "svolta"], url: "https://images.unsplash.com/photo-1476820865390-c52aeebb9891?auto=format&fit=crop&w=900&q=70" },
-      { name: "Castello in Lontananza", match: ["castello", "rocca", "fortezza", "baluardo", "mura della fortezza"], url: "https://images.unsplash.com/photo-1514539079130-25950c84af65?auto=format&fit=crop&w=900&q=70" },
-      { name: "Cimitero Antico & Lapidi", match: ["cimitero", "tomba", "tombe", "lapide", "lapidi", "mausoleo", "sepolcro", "ossario"], url: "https://images.unsplash.com/photo-1509114397022-ed747cca3f65?auto=format&fit=crop&w=900&q=70" },
-      { name: "Prigione & Segrete di Pietra", match: ["prigione", "segrete", "cella", "sbarre", "gabbia", "catene", "carcere"], url: "https://images.unsplash.com/photo-1584824486509-112e4181ff6b?auto=format&fit=crop&w=900&q=70" },
-      { name: "Interno Casa / Dimora Rustica", match: ["casa", "camera", "stanza", "focolare", "caminetto", "letto", "dimora", "rifugio caldo"], url: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=900&q=70" },
-      { name: "Negozio / Bottega Antica", match: ["negozio", "bottega", "emporio", "mercante", "bancarella", "mercanzia", "comprare", "venditore"], url: "https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d?auto=format&fit=crop&w=900&q=70" },
-      { name: "Cielo & Firmamento", match: ["cielo", "nuvole", "firmamento", "aria aperta", "etere"], url: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=900&q=70" },
-      { name: "Fucina & Armeria", match: ["fucina", "forgia", "incudine", "fabbro", "ferro battuto", "armeria", "spade"], url: "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=900&q=70" },
-      { name: "Caverna & Antro Profondo", match: ["caverna", "grotta", "antro", "sotterrane", "cunicol", "stalattit", "stalagmit"], url: "https://images.unsplash.com/photo-1509225770129-fbcf8a696c0b?auto=format&fit=crop&w=900&q=70" },
-      { name: "Biblioteca Arcana & Tomi", match: ["biblioteca", "archivio", "libreria", "pergamene", "tomi", "manoscritti", "libri"], url: "https://images.unsplash.com/photo-1507842229451-79b1be886a20?auto=format&fit=crop&w=900&q=70" },
-      { name: "Taverna & Locanda", match: ["taverna", "locanda", "oste", "banco", "boccale", "birra", "osteria"], url: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=900&q=70" },
-      { name: "Tempio & Cattedrale", match: ["tempio", "cattedrale", "chiesa", "santuario", "altare", "cappella"], url: "https://images.unsplash.com/photo-1548625361-1959779df50f?auto=format&fit=crop&w=900&q=70" },
-      { name: "Sala del Trono / Reggia", match: ["trono", "reggia", "palazzo reale", "corte reale"], url: "https://images.unsplash.com/photo-1541123437800-1bb1317badc2?auto=format&fit=crop&w=900&q=70" },
-      { name: "Bosco Antico", match: ["bosco", "foresta", "alberi", "radura", "foglie", "radici"], url: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=900&q=70" },
-      { name: "Rovine Dimenticate", match: ["rovine", "macerie", "abbandonat", "rudere", "diroccat"], url: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=900&q=70" },
-      { name: "Pioggia & Tempesta", match: ["pioggia", "temporale", "tempesta", "piove", "fulmine", "tuono", "diluvio"], url: "https://images.unsplash.com/photo-1534274988757-a28bf1a57c17?auto=format&fit=crop&w=900&q=70" },
-      { name: "Notte Stellata", match: ["notte", "buio", "oscurit", "tenebre", "stelle", "luna"], url: "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=900&q=70" },
-      { name: "Neve & Bufera", match: ["neve", "ghiaccio", "bufera", "tundra", "gelo", "inverno"], url: "https://images.unsplash.com/photo-1483921020237-2ff51e8e4b22?auto=format&fit=crop&w=900&q=70" },
-      { name: "Montagne & Dirupi", match: ["montagna", "vette", "dirupo", "rupe", "picco", "precipizio"], url: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=70" },
-      { name: "Mare & Costa", match: ["mare", "spiaggia", "costa", "oceano", "onde", "scogliera"], url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=70" },
-      { name: "Palude Oscura", match: ["palude", "acquitrino", "fanghiglia", "stagno"], url: "https://images.unsplash.com/photo-1508873696983-2df5293cb32b?auto=format&fit=crop&w=900&q=70" },
-      { name: "Deserto & Sabbia", match: ["deserto", "dune", "oasi", "sabbia"], url: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=900&q=70" },
-      { name: "Borgo & Strade Medievali", match: ["città", "borgo", "strada", "vicolo", "piazza", "villaggio"], url: "https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=900&q=70" },
-      { name: "Fuoco & Fiamme", match: ["fuoco", "vulcano", "lava", "magma", "fiamme", "cenere"], url: "https://images.unsplash.com/photo-1527489377706-5bf97e608852?auto=format&fit=crop&w=900&q=70" },
-      { name: "Accampamento Notturno", match: ["accampamento", "tenda", "falò", "bivacco"], url: "https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?auto=format&fit=crop&w=900&q=70" }
+      { name: "Bosco Antico", match: ["bosco", "foresta", "alberi", "radura"], url: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=900&q=70" },
+      { name: "Taverna & Locanda", match: ["taverna", "locanda", "oste", "banco", "boccale"], url: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=900&q=70" }
     ];
 
     let currentBg = '';
@@ -660,9 +962,488 @@
     let startDragX = 0;
     let startDragY = 0;
 
+    /* GIOCO 1: COSTELLAZIONI */
+    const CONSTELLATIONS = [
+      {
+        name: "Cassiopea",
+        sub: "La Regina del Cielo del Nord — Tracciata nella volta stellata.",
+        stars: [{ x: 0.18, y: 0.65 }, { x: 0.35, y: 0.38 }, { x: 0.52, y: 0.55 }, { x: 0.70, y: 0.30 }, { x: 0.85, y: 0.45 }]
+      },
+      {
+        name: "Orsa Minore & Stella Polare",
+        sub: "La bussola dei viandanti — Il Piccolo Carro veglia sul nord.",
+        stars: [{ x: 0.85, y: 0.18 }, { x: 0.68, y: 0.32 }, { x: 0.52, y: 0.40 }, { x: 0.40, y: 0.52 }, { x: 0.42, y: 0.75 }, { x: 0.22, y: 0.78 }, { x: 0.20, y: 0.55 }, { x: 0.40, y: 0.52 }]
+      },
+      {
+        name: "Cigno (Croce del Nord)",
+        sub: "L'uccello sacro in volo eterno verso l'orizzonte argenteo.",
+        stars: [{ x: 0.50, y: 0.18 }, { x: 0.50, y: 0.50 }, { x: 0.18, y: 0.54 }, { x: 0.50, y: 0.50 }, { x: 0.82, y: 0.46 }, { x: 0.50, y: 0.50 }, { x: 0.50, y: 0.82 }]
+      },
+      {
+        name: "Lira (Vega)",
+        sub: "Lo strumento d'argento suonato da Orfeo nelle ombre.",
+        stars: [{ x: 0.32, y: 0.25 }, { x: 0.60, y: 0.28 }, { x: 0.72, y: 0.62 }, { x: 0.46, y: 0.78 }, { x: 0.36, y: 0.48 }, { x: 0.32, y: 0.25 }]
+      },
+      {
+        name: "Orione (La Cintura)",
+        sub: "Il cacciatore leggendario armato di spada tra i ghiacci.",
+        stars: [{ x: 0.25, y: 0.22 }, { x: 0.75, y: 0.26 }, { x: 0.62, y: 0.48 }, { x: 0.50, y: 0.50 }, { x: 0.38, y: 0.52 }, { x: 0.28, y: 0.82 }, { x: 0.72, y: 0.78 }]
+      }
+    ];
+
+    let currentConstIndex = 0;
+    let connectedStarCount = 0;
+    let bgFaintStars = [];
+
+    function openStarsModal() {
+      toggleDrawer(false);
+      closeModals();
+      document.getElementById('starsModal').style.display = 'flex';
+      initFaintStars();
+      renderStarsGame();
+    }
+
+    function initFaintStars() {
+      bgFaintStars = [];
+      for (let i = 0; i < 45; i++) {
+        bgFaintStars.push({ x: Math.random() * 320, y: Math.random() * 290, r: Math.random() * 1.3 + 0.5, alpha: Math.random() * 0.5 + 0.2 });
+      }
+    }
+
+    function renderStarsGame() {
+      const canvas = document.getElementById('starCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      bgFaintStars.forEach(s => {
+        ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha})`;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      const constData = CONSTELLATIONS[currentConstIndex];
+      const stars = constData.stars;
+      const isCompleted = connectedStarCount >= stars.length;
+
+      if (connectedStarCount > 1) {
+        ctx.strokeStyle = isCompleted ? '#d4af37' : 'rgba(212, 175, 55, 0.75)';
+        ctx.lineWidth = isCompleted ? 2.5 : 1.8;
+        ctx.shadowColor = '#d4af37';
+        ctx.shadowBlur = isCompleted ? 12 : 6;
+        ctx.beginPath();
+        for (let i = 0; i < Math.min(connectedStarCount, stars.length); i++) {
+          const sx = stars[i].x * w;
+          const sy = stars[i].y * h;
+          if (i === 0) ctx.moveTo(sx, sy);
+          else ctx.lineTo(sx, sy);
+        }
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+
+      stars.forEach((st, idx) => {
+        const sx = st.x * w;
+        const sy = st.y * h;
+        const isConnected = idx < connectedStarCount;
+        const isNext = idx === connectedStarCount;
+
+        if (isNext) {
+          ctx.strokeStyle = 'rgba(212, 175, 55, 0.85)';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(sx, sy, 11, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        ctx.fillStyle = isConnected ? '#fff' : (isNext ? '#f5e8d3' : 'rgba(180, 195, 215, 0.4)');
+        ctx.shadowColor = isConnected ? '#d4af37' : '#fff';
+        ctx.shadowBlur = isConnected ? 10 : 3;
+        ctx.beginPath();
+        ctx.arc(sx, sy, isConnected ? 4.5 : 3.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+
+      const nameLabel = document.getElementById('starNameLabel');
+      const descLabel = document.getElementById('starDescLabel');
+      const btnNext = document.getElementById('btnNextStar');
+
+      if (isCompleted) {
+        nameLabel.textContent = `✦ ${constData.name} ✦`;
+        descLabel.textContent = constData.sub;
+        btnNext.style.display = 'block';
+      } else {
+        nameLabel.textContent = `Costellazione: ${constData.name}`;
+        descLabel.textContent = `Tocca la stella evidenziata (${connectedStarCount + 1}/${stars.length})...`;
+        btnNext.style.display = 'none';
+      }
+    }
+
+    function handleStarClick(clientX, clientY) {
+      const canvas = document.getElementById('starCanvas');
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const clickX = (clientX - rect.left) * scaleX;
+      const clickY = (clientY - rect.top) * scaleY;
+
+      const constData = CONSTELLATIONS[currentConstIndex];
+      const stars = constData.stars;
+
+      if (connectedStarCount < stars.length) {
+        const target = stars[connectedStarCount];
+        const tx = target.x * canvas.width;
+        const ty = target.y * canvas.height;
+        if (Math.hypot(clickX - tx, clickY - ty) <= 32) {
+          connectedStarCount++;
+          renderStarsGame();
+        }
+      }
+    }
+
+    function nextConstellation() {
+      currentConstIndex = (currentConstIndex + 1) % CONSTELLATIONS.length;
+      connectedStarCount = 0;
+      renderStarsGame();
+    }
+
+    function resetConstellation() {
+      connectedStarCount = 0;
+      renderStarsGame();
+    }
+
+    /* GIOCO 2: FORGIA ALCHEMICA */
+    const ALCHEMY_RECIPES = {
+      "Acqua+Fuoco": { name: "Vapore", icon: "🌫️" },
+      "Acqua+Terra": { name: "Fango", icon: "🪵" },
+      "Fuoco+Terra": { name: "Lava", icon: "🌋" },
+      "Aria+Fuoco": { name: "Energia", icon: "⚡" },
+      "Aria+Terra": { name: "Polvere", icon: "🌪️" },
+      "Acqua+Lava": { name: "Ossidiana", icon: "🪨" },
+      "Fuoco+Lava": { name: "Metallo", icon: "🪙" },
+      "Acqua+Fango": { name: "Pianta", icon: "🌿" },
+      "Energia+Metallo": { name: "Spada", icon: "⚔️" },
+      "Fuoco+Pianta": { name: "Cenere", icon: "📜" },
+      "Acqua+Pianta": { name: "Pozione", icon: "🧪" },
+      "Cenere+Fuoco": { name: "Fenice", icon: "🦅" },
+      "Metallo+Spada": { name: "Armatura", icon: "🛡️" },
+      "Metallo+Ossidiana": { name: "Lama Runica", icon: "🗡️" },
+      "Energia+Pozione": { name: "Elisir", icon: "🔮" },
+      "Aria+Vapore": { name: "Nuvola", icon: "☁️" },
+      "Energia+Nuvola": { name: "Tempesta", icon: "⛈️" },
+      "Lama Runica+Tempesta": { name: "Folgore Arcana", icon: "✨" },
+      "Elisir+Pianta": { name: "Albero della Vita", icon: "🌳" },
+      "Armatura+Lama Runica": { name: "Golem", icon: "🗿" },
+      "Fenice+Lava": { name: "Drago", icon: "🐉" }
+    };
+
+    let alcSlot1 = null;
+    let alcSlot2 = null;
+    let unlockedElements = JSON.parse(localStorage.getItem('rp_alchemy_unlocked') || 'null') || [
+      { name: "Fuoco", icon: "🔥" },
+      { name: "Acqua", icon: "💧" },
+      { name: "Terra", icon: "🪨" },
+      { name: "Aria", icon: "💨" }
+    ];
+
+    function openAlchemyModal() {
+      toggleDrawer(false);
+      closeModals();
+      renderAlchemy();
+      document.getElementById('alchemyModal').style.display = 'flex';
+    }
+
+    function renderAlchemy() {
+      const inv = document.getElementById('alcInventory');
+      inv.innerHTML = '';
+      unlockedElements.forEach(el => {
+        const chip = document.createElement('div');
+        chip.className = 'alchemy-chip';
+        chip.innerHTML = `<span>${el.icon}</span> <span>${el.name}</span>`;
+        chip.onclick = () => selectAlchemyElement(el);
+        inv.appendChild(chip);
+      });
+
+      document.getElementById('alcCountLabel').textContent = `${unlockedElements.length} / 25`;
+      updateAlcSlotUI();
+    }
+
+    function selectAlchemyElement(el) {
+      if (!alcSlot1) alcSlot1 = el;
+      else if (!alcSlot2) alcSlot2 = el;
+      else alcSlot1 = el;
+      updateAlcSlotUI();
+    }
+
+    function clearAlcSlot(num) {
+      if (num === 1) alcSlot1 = null;
+      if (num === 2) alcSlot2 = null;
+      updateAlcSlotUI();
+    }
+
+    function updateAlcSlotUI() {
+      const s1Icon = document.getElementById('alcSlot1Icon');
+      const s1Name = document.getElementById('alcSlot1Name');
+      const s2Icon = document.getElementById('alcSlot2Icon');
+      const s2Name = document.getElementById('alcSlot2Name');
+
+      if (alcSlot1) { s1Icon.textContent = alcSlot1.icon; s1Name.textContent = alcSlot1.name; }
+      else { s1Icon.textContent = '?'; s1Name.textContent = 'Vuoto'; }
+
+      if (alcSlot2) { s2Icon.textContent = alcSlot2.icon; s2Name.textContent = alcSlot2.name; }
+      else { s2Icon.textContent = '?'; s2Name.textContent = 'Vuoto'; }
+    }
+
+    function combineAlchemy() {
+      const msg = document.getElementById('alcResultMsg');
+      if (!alcSlot1 || !alcSlot2) {
+        msg.textContent = "Scegli prima due elementi!";
+        msg.style.color = 'var(--muted)';
+        return;
+      }
+
+      const key = [alcSlot1.name, alcSlot2.name].sort().join('+');
+      const res = ALCHEMY_RECIPES[key];
+
+      if (res) {
+        const already = unlockedElements.some(e => e.name === res.name);
+        if (!already) {
+          unlockedElements.push(res);
+          localStorage.setItem('rp_alchemy_unlocked', JSON.stringify(unlockedElements));
+          msg.textContent = `✨ Hai forgiato: ${res.icon} ${res.name}!`;
+          msg.style.color = 'var(--gold)';
+          renderAlchemy();
+        } else {
+          msg.textContent = `Elemento già noto: ${res.icon} ${res.name}`;
+          msg.style.color = 'var(--text)';
+        }
+      } else {
+        msg.textContent = "Nessuna reazione tra questi due elementi...";
+        msg.style.color = 'var(--red)';
+      }
+    }
+
+    /* GIOCO 3: ARENA TATTICA */
+    const HERO_TYPES = {
+      warrior: { name: "Guerriero", icon: "🛡️", hp: 32, maxHp: 32, atk: 5, range: 1 },
+      archer:  { name: "Arciere",   icon: "🏹", hp: 16, maxHp: 16, atk: 9, range: 3 },
+      mage:    { name: "Mago",      icon: "🧙", hp: 14, maxHp: 14, atk: 12, range: 3 },
+      cleric:  { name: "Chierico",  icon: "🌿", hp: 20, maxHp: 20, atk: 4, range: 2, heal: 6 }
+    };
+
+    let abGold = 10;
+    let abHp = 20;
+    let abWave = 1;
+    let abIsBattling = false;
+    let abBattleTimer = null;
+    let abGrid = Array(12).fill(null);
+
+    function openBattlerModal() {
+      toggleDrawer(false);
+      closeModals();
+      document.getElementById('battlerModal').style.display = 'flex';
+      initAbWave();
+      renderAbUI();
+    }
+
+    function initAbWave() {
+      for (let i = 0; i < 6; i++) abGrid[i] = null;
+      const enemyPool = ['warrior', 'archer'];
+      if (abWave >= 2) enemyPool.push('mage');
+      if (abWave >= 3) enemyPool.push('cleric');
+
+      const enemyCount = Math.min(2 + Math.floor(abWave * 0.8), 5);
+      const enemySlots = [0, 1, 2, 3, 4, 5].sort(() => Math.random() - 0.5).slice(0, enemyCount);
+
+      enemySlots.forEach(idx => {
+        const typeKey = enemyPool[Math.floor(Math.random() * enemyPool.length)];
+        const base = HERO_TYPES[typeKey];
+        const boost = (abWave - 1) * 3;
+        abGrid[idx] = {
+          ...base,
+          team: 'enemy',
+          hp: base.hp + boost,
+          maxHp: base.hp + boost,
+          atk: base.atk + Math.floor(boost / 2)
+        };
+      });
+    }
+
+    function renderAbUI() {
+      document.getElementById('abWaveLabel').textContent = abWave;
+      document.getElementById('abGoldLabel').textContent = abGold;
+      document.getElementById('abHpLabel').textContent = abHp;
+
+      const boardEl = document.getElementById('abBoard');
+      boardEl.innerHTML = '';
+
+      abGrid.forEach((cell, idx) => {
+        const div = document.createElement('div');
+        div.className = `ab-cell ${idx < 6 ? 'enemy-zone' : 'player-zone'}`;
+
+        if (cell) {
+          div.innerHTML = `
+            <span>${cell.icon}</span>
+            <div class="ab-hp-bar">
+              <div class="ab-hp-fill" style="width:${Math.max(0, (cell.hp / cell.maxHp) * 100)}%; background:${cell.team === 'enemy' ? '#e74c3c' : '#2ecc71'};"></div>
+            </div>
+          `;
+        }
+
+        div.onclick = () => handleAbCellClick(idx);
+        boardEl.appendChild(div);
+      });
+
+      renderAbShop();
+    }
+
+    function renderAbShop() {
+      const shopEl = document.getElementById('abShop');
+      shopEl.innerHTML = '';
+      const shopPool = ['warrior', 'archer', 'mage', 'cleric'];
+
+      shopPool.forEach(key => {
+        const h = HERO_TYPES[key];
+        const btn = document.createElement('div');
+        btn.className = 'ab-card';
+        btn.innerHTML = `<b style="font-size:1rem;">${h.icon}</b><br>${h.name}<br><small style="color:var(--gold);">3 🪙</small>`;
+        btn.onclick = () => buyAbHero(key);
+        shopEl.appendChild(btn);
+      });
+    }
+
+    function buyAbHero(key) {
+      if (abIsBattling) return;
+      if (abGold < 3) {
+        document.getElementById('abStatusText').textContent = "Oro insufficiente!";
+        return;
+      }
+      const freeIdx = [6, 7, 8, 9, 10, 11].find(i => abGrid[i] === null);
+      if (freeIdx === undefined) {
+        document.getElementById('abStatusText').textContent = "Schieramento pieno!";
+        return;
+      }
+
+      abGold -= 3;
+      const base = HERO_TYPES[key];
+      abGrid[freeIdx] = { ...base, team: 'player' };
+      document.getElementById('abStatusText').textContent = `Reclutato ${base.name}!`;
+      renderAbUI();
+    }
+
+    function handleAbCellClick(idx) {
+      if (abIsBattling) return;
+      if (idx >= 6 && abGrid[idx]) {
+        abGold += 2;
+        document.getElementById('abStatusText').textContent = `Congedato ${abGrid[idx].name} (+2 Oro)`;
+        abGrid[idx] = null;
+        renderAbUI();
+      }
+    }
+
+    function startAutoBattle() {
+      if (abIsBattling) return;
+      const hasPlayerUnits = abGrid.slice(6, 12).some(u => u !== null);
+      if (!hasPlayerUnits) {
+        document.getElementById('abStatusText').textContent = "Schiera almeno un eroe prima di combattere!";
+        return;
+      }
+
+      abIsBattling = true;
+      document.getElementById('abBattleBtn').disabled = true;
+      document.getElementById('abStatusText').textContent = "⚔️ Battaglia in corso...";
+      abBattleTimer = setInterval(abBattleStep, 500);
+    }
+
+    function abBattleStep() {
+      const players = [];
+      const enemies = [];
+
+      abGrid.forEach((u, idx) => {
+        if (u && u.hp > 0) {
+          if (u.team === 'player') players.push({ unit: u, idx });
+          else enemies.push({ unit: u, idx });
+        }
+      });
+
+      if (enemies.length === 0) {
+        clearInterval(abBattleTimer);
+        abIsBattling = false;
+        abWave++;
+        abGold += 6;
+        document.getElementById('abStatusText').textContent = "🎉 Vittoria! Ondata superata (+6 Oro)";
+        document.getElementById('abBattleBtn').disabled = false;
+        abGrid.forEach(u => { if (u && u.team === 'player') u.hp = u.maxHp; });
+        initAbWave();
+        renderAbUI();
+        return;
+      }
+
+      if (players.length === 0) {
+        clearInterval(abBattleTimer);
+        abIsBattling = false;
+        abHp -= Math.max(enemies.length * 2, 3);
+        document.getElementById('abBattleBtn').disabled = false;
+
+        if (abHp <= 0) {
+          abHp = 0;
+          document.getElementById('abStatusText').textContent = "💀 Sconfitta! L'arena è caduta. Resetta per ricominciare.";
+        } else {
+          document.getElementById('abStatusText').textContent = "💔 Ondata persa! Schiera di nuovo le difese.";
+          abGold += 4;
+        }
+        renderAbUI();
+        return;
+      }
+
+      players.forEach(p => {
+        if (p.unit.heal && players.length > 1) {
+          const hurt = players.filter(a => a.unit.hp < a.unit.maxHp).sort((a,b) => a.unit.hp - b.unit.hp)[0];
+          if (hurt) hurt.unit.hp = Math.min(hurt.unit.maxHp, hurt.unit.hp + p.unit.heal);
+        } else if (enemies.length > 0) {
+          const target = enemies[Math.floor(Math.random() * enemies.length)];
+          target.unit.hp -= p.unit.atk;
+        }
+      });
+
+      enemies.forEach(e => {
+        if (e.unit.heal && enemies.length > 1) {
+          const hurt = enemies.filter(a => a.unit.hp < a.unit.maxHp).sort((a,b) => a.unit.hp - b.unit.hp)[0];
+          if (hurt) hurt.unit.hp = Math.min(hurt.unit.maxHp, hurt.unit.hp + e.unit.heal);
+        } else if (players.length > 0) {
+          const target = players[Math.floor(Math.random() * players.length)];
+          target.unit.hp -= e.unit.atk;
+        }
+      });
+
+      abGrid.forEach((u, i) => {
+        if (u && u.hp <= 0) abGrid[i] = null;
+      });
+
+      renderAbUI();
+    }
+
+    function resetAutoBattler() {
+      if (abBattleTimer) clearInterval(abBattleTimer);
+      abIsBattling = false;
+      abGold = 10;
+      abHp = 20;
+      abWave = 1;
+      abGrid = Array(12).fill(null);
+      document.getElementById('abBattleBtn').disabled = false;
+      document.getElementById('abStatusText').textContent = "Arena azzerata. Buona fortuna!";
+      initAbWave();
+      renderAbUI();
+    }
+
+    /* GESTIONE CHAT RP & DATABASE */
     const DEFAULT_DATA = {
       characters: [],
-      rooms: [{ id: 'r1', title: 'Capitolo I: Nel Bosco Antico', messages: [] }],
+      rooms: [{ id: 'r1', title: 'Capitolo I: Nel Bosco Antico', messages: [], bgUrl: '', bgTitle: '' }],
       activeRoom: 'r1',
       activeChar: null,
       mode: 'ic',
@@ -725,6 +1506,21 @@
       return encodeURIComponent(name.toLowerCase().trim()).replace(/\./g, '_');
     }
 
+    function togglePeekMode() {
+      isPeekMode = !isPeekMode;
+      const story = document.getElementById('story');
+      const btn = document.getElementById('btnPeek');
+      if (isPeekMode) {
+        story.style.opacity = '0.04';
+        story.style.pointerEvents = 'none';
+        btn.style.color = '#2ecc71';
+      } else {
+        story.style.opacity = '1';
+        story.style.pointerEvents = 'auto';
+        btn.style.color = 'var(--gold)';
+      }
+    }
+
     function refreshTypingDisplay() {
       const input = document.getElementById('entryInput');
       const notice = document.getElementById('typingNotice');
@@ -746,10 +1542,7 @@
       const ref = typingRootRef.child(room.id).child(getSafePlayerKey());
 
       if (isTyping) {
-        ref.set({
-          user: currentPlayer || 'Qualcuno',
-          time: Date.now()
-        });
+        ref.set({ user: currentPlayer || 'Qualcuno', time: Date.now() });
         ref.onDisconnect().remove();
       } else {
         ref.remove();
@@ -759,7 +1552,6 @@
     function handleTypingInput() {
       const input = document.getElementById('entryInput');
       const hasText = input.value.trim().length > 0;
-
       refreshTypingDisplay();
 
       if (hasText) {
@@ -799,48 +1591,10 @@
       });
     }
 
-    function levenshtein(a, b) {
-      if (a === b) return 0;
-      const la = a.length, lb = b.length;
-      if (Math.abs(la - lb) > 2) return 99;
-      const d = [];
-      for (let i = 0; i <= la; i++) d[i] = [i];
-      for (let j = 0; j <= lb; j++) d[0][j] = j;
-      for (let i = 1; i <= la; i++) {
-        for (let j = 1; j <= lb; j++) {
-          const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-          d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
-        }
-      }
-      return d[la][lb];
-    }
-
-    function checkAmbient(text) {
-      if (!text) return;
-      const clean = text.toLowerCase().replace(/[^a-z0-9àèéìòù\s]/g, ' ');
-      const words = clean.split(/\s+/).filter(w => w.length >= 3);
-      
-      for (let s of SCENARIOS) {
-        for (let kw of s.match) {
-          if (clean.includes(kw)) {
-            if (currentBg !== s.url) triggerAmbient(s.url, s.name);
-            return;
-          }
-          for (let w of words) {
-            const maxDist = kw.length > 5 ? 2 : 1;
-            if (levenshtein(w, kw) <= maxDist) {
-              if (currentBg !== s.url) triggerAmbient(s.url, s.name);
-              return;
-            }
-          }
-        }
-      }
-    }
-
     function triggerAmbient(url, name) {
-      if (currentBg === url) return;
+      if (!url || currentBg === url) return;
       currentBg = url;
-      document.getElementById('ambientTag').textContent = "Atmosfera: " + name;
+      document.getElementById('ambientTag').textContent = "Atmosfera: " + (name || 'Scorcio');
 
       const preloader = new Image();
       preloader.onload = () => {
@@ -894,13 +1648,74 @@
       listenToTyping();
     }
 
+    function openLocationModal() {
+      toggleDrawer(false);
+      closeModals();
+      selectedLocationBase64 = '';
+      document.getElementById('locFileInput').value = '';
+      document.getElementById('locCaptionInput').value = '';
+      document.getElementById('locPreviewBox').style.display = 'none';
+      document.getElementById('locChooseBtn').textContent = "📷 Scegli Foto dalla Galleria";
+      document.getElementById('locationModal').style.display = 'flex';
+    }
+
+    function publishLocation() {
+      if (!selectedLocationBase64) {
+        alert("Scegli prima una foto dalla galleria!");
+        return;
+      }
+      const caption = document.getElementById('locCaptionInput').value.trim();
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const room = getRoom();
+
+      const msg = {
+        id: 'm_' + Date.now(),
+        type: 'location',
+        time,
+        author: currentPlayer,
+        title: caption || 'Scorcio',
+        imageUrl: selectedLocationBase64
+      };
+
+      if (!room.messages) room.messages = [];
+      room.messages.push(msg);
+      room.bgUrl = selectedLocationBase64;
+      room.bgTitle = caption || 'Scorcio';
+
+      syncAll();
+      renderStory();
+      triggerAmbient(room.bgUrl, room.bgTitle);
+      closeModals();
+    }
+
+    function setBgDirectly(url, title) {
+      const room = getRoom();
+      room.bgUrl = url;
+      room.bgTitle = title || 'Scorcio';
+      syncAll();
+      triggerAmbient(url, title);
+    }
+
+    function showFullImage(url, title) {
+      const modal = document.getElementById('avatarModal');
+      const img = document.getElementById('avatarModalImg');
+      const name = document.getElementById('avatarModalName');
+      img.src = url;
+      name.textContent = title || 'Scorcio';
+      name.style.color = 'var(--gold)';
+      modal.style.display = 'flex';
+    }
+
     function init() {
       updatePlayerUI();
       renderRooms();
       renderCharBar();
       renderStory();
       listenToTyping();
-      triggerAmbient(SCENARIOS[14].url, SCENARIOS[14].name);
+
+      const r = getRoom();
+      if (r && r.bgUrl) triggerAmbient(r.bgUrl, r.bgTitle);
+      else triggerAmbient(SCENARIOS[0].url, SCENARIOS[0].name);
 
       const input = document.getElementById('entryInput');
       input.addEventListener('input', () => {
@@ -933,41 +1748,46 @@
         insertActionAsterisks();
       });
 
+      const starCv = document.getElementById('starCanvas');
+      starCv.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        handleStarClick(e.clientX, e.clientY);
+      });
+
+      // CARICAMENTO SICURO FOTO LUOGO
+      const locFile = document.getElementById('locFileInput');
+      locFile.onclick = function() { this.value = null; };
+      locFile.onchange = function(e) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        const btn = document.getElementById('locChooseBtn');
+        btn.textContent = "⏳ Elaborazione foto...";
+
+        compressAndLoadImage(file, 960, 640, 0.68, (base64) => {
+          selectedLocationBase64 = base64;
+          const pBox = document.getElementById('locPreviewBox');
+          const pImg = document.getElementById('locPreviewImg');
+          pImg.src = base64;
+          pBox.style.display = 'block';
+          btn.textContent = "✓ Foto Pronta";
+        });
+      };
+
+      // CARICAMENTO SICURO AVATAR
       const fileInput = document.getElementById('cFile');
       fileInput.onclick = function() { this.value = null; };
       fileInput.onchange = function(e) {
         const file = e.target.files && e.target.files[0];
         if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = function(evt) {
-          const tempImg = new Image();
-          tempImg.onload = function() {
-            const maxDim = 1200;
-            let w = tempImg.width;
-            let h = tempImg.height;
+        const btn = document.getElementById('cChooseBtn');
+        btn.textContent = "⏳ Elaborazione...";
 
-            if (w > maxDim || h > maxDim) {
-              if (w > h) {
-                h = Math.round(h * maxDim / w);
-                w = maxDim;
-              } else {
-                w = Math.round(w * maxDim / h);
-                h = maxDim;
-              }
-            }
-
-            const pCanvas = document.createElement('canvas');
-            pCanvas.width = w;
-            pCanvas.height = h;
-            const pCtx = pCanvas.getContext('2d');
-            pCtx.drawImage(tempImg, 0, 0, w, h);
-
-            openCropper(pCanvas.toDataURL('image/jpeg', 0.92));
-          };
-          tempImg.src = evt.target.result;
-        };
-        reader.readAsDataURL(file);
+        compressAndLoadImage(file, 800, 800, 0.8, (base64) => {
+          btn.textContent = "📷 Foto dalla Galleria";
+          openCropper(base64);
+        });
       };
 
       initTouchCropEvents();
@@ -984,14 +1804,54 @@
           renderCharBar();
           renderStory();
 
-          const room = getRoom();
-          if (room.messages && room.messages.length > 0) {
-            checkAmbient(room.messages[room.messages.length - 1].text);
+          const currentR = getRoom();
+          if (currentR && currentR.bgUrl) {
+            triggerAmbient(currentR.bgUrl, currentR.bgTitle);
           }
         } else {
           syncAll();
         }
       });
+    }
+
+    /* COMPRESSORE LEGGERO A ZERO MEMORIA */
+    function compressAndLoadImage(file, maxW, maxH, quality, callback) {
+      const blobUrl = URL.createObjectURL(file);
+      const tempImg = new Image();
+
+      tempImg.onload = () => {
+        URL.revokeObjectURL(blobUrl);
+
+        let w = tempImg.naturalWidth || tempImg.width;
+        let h = tempImg.naturalHeight || tempImg.height;
+
+        if (w > maxW || h > maxH) {
+          if (w / h > maxW / maxH) {
+            h = Math.round(h * maxW / w);
+            w = maxW;
+          } else {
+            w = Math.round(w * maxH / h);
+            h = maxH;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(tempImg, 0, 0, w, h);
+
+        callback(canvas.toDataURL('image/jpeg', quality));
+      };
+
+      tempImg.onerror = () => {
+        URL.revokeObjectURL(blobUrl);
+        alert("Impossibile caricare questa immagine. Prova con un'altra.");
+        const btn = document.getElementById('locChooseBtn');
+        if (btn) btn.textContent = "📷 Scegli Foto dalla Galleria";
+      };
+
+      tempImg.src = blobUrl;
     }
 
     function insertThoughtTildes() {
@@ -1225,19 +2085,19 @@
       try {
         if (cropImg) {
           const outCanvas = document.createElement('canvas');
-          outCanvas.width = 512;
-          outCanvas.height = 512;
+          outCanvas.width = 400;
+          outCanvas.height = 400;
           const outCtx = outCanvas.getContext('2d');
           
           outCtx.imageSmoothingEnabled = true;
           outCtx.imageSmoothingQuality = 'high';
 
-          const scaleFactor = 512 / 210;
+          const scaleFactor = 400 / 210;
           outCtx.scale(scaleFactor, scaleFactor);
           outCtx.translate(-15, -15);
           outCtx.drawImage(cropImg, cropX, cropY, cropImg.width * cropScale, cropImg.height * cropScale);
 
-          selectedAvatarBase64 = outCanvas.toDataURL('image/jpeg', 0.9);
+          selectedAvatarBase64 = outCanvas.toDataURL('image/jpeg', 0.85);
           const preview = document.getElementById('cPreview');
           if (preview) {
             preview.src = selectedAvatarBase64;
@@ -1263,7 +2123,16 @@
       const bar = document.getElementById('charBar');
       bar.innerHTML = '';
 
-      // CLESSIDRA (Salto temporale / Scena)
+      const btnLoc = document.createElement('button');
+      btnLoc.className = 'mode-tag';
+      btnLoc.textContent = '🖼️';
+      btnLoc.title = "Nuovo Luogo & Sfondo";
+      btnLoc.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        openLocationModal();
+      });
+      bar.appendChild(btnLoc);
+
       const btnScene = document.createElement('button');
       btnScene.className = `mode-tag ${isSceneMode ? 'active' : ''}`;
       btnScene.id = 'btnQuickScene';
@@ -1275,7 +2144,6 @@
       });
       bar.appendChild(btnScene);
 
-      // NARRATORE
       const btnNarr = document.createElement('button');
       btnNarr.className = `mode-tag ${state.mode === 'narrator' ? 'active' : ''}`;
       btnNarr.textContent = "Narratore";
@@ -1288,7 +2156,6 @@
       });
       bar.appendChild(btnNarr);
 
-      // // OOC
       const btnOoc = document.createElement('button');
       btnOoc.className = `mode-tag ${state.mode === 'ooc' ? 'active' : ''}`;
       btnOoc.textContent = "// OOC";
@@ -1439,8 +2306,37 @@
           const sc = document.createElement('div');
           sc.className = 'tome-scene';
           sc.id = 'msg_' + m.id;
-          sc.textContent = `— ${m.text} —`;
+          sc.innerHTML = 
+            `<div class="scene-actions"><button onclick="startEdit('${m.id}')" title="Modifica">&#x270E;</button></div>` +
+            `<span class="scene-text">— ${m.text} —</span>` +
+            `<div class="scene-actions"><button onclick="deleteMsg('${m.id}')" title="Cancella">&#x2715;</button></div>`;
           container.appendChild(sc);
+          return;
+        }
+
+        if (m.type === 'location') {
+          const card = document.createElement('div');
+          card.className = 'tome-card';
+          card.id = 'msg_' + m.id;
+          card.style.border = '1px solid var(--gold)';
+          card.innerHTML = 
+            `<div class="card-header">` +
+              `<div class="card-meta-box">` +
+                `<span class="card-author" style="color:var(--gold);">&#x1F5BC; SCORCIO & LUOGO</span>` +
+                `<span class="card-time">&#x2726; ${m.time}</span>` +
+              `</div>` +
+              `<div class="card-actions">` +
+                `<button onclick="setBgDirectly('${m.imageUrl}', '${m.title}')" title="Ripristina come sfondo">&#x1F504;</button>` +
+                `<button onclick="deleteMsg('${m.id}')" title="Cancella">&#x2715;</button>` +
+              `</div>` +
+            `</div>` +
+            `<div class="card-body">` +
+              `<div class="location-img-box" onclick="showFullImage('${m.imageUrl}', '${m.title}')">` +
+                `<img src="${m.imageUrl}" alt="Scorcio">` +
+              `</div>` +
+              (m.title ? `<div class="location-caption">${m.title}</div>` : '') +
+            `</div>`;
+          container.appendChild(card);
           return;
         }
 
@@ -1462,7 +2358,7 @@
               `<span class="card-time">&#x2726; ${m.time}</span>` +
             `</div>` +
             `<div class="card-actions">` +
-              `<button onclick="startEdit('${m.id}')" title="Modifica">&#x2712;</button>` +
+              `<button onclick="startEdit('${m.id}')" title="Modifica">&#x270E;</button>` +
               `<button onclick="deleteMsg('${m.id}')" title="Cancella">&#x2715;</button>` +
             `</div>` +
           `</div>` +
@@ -1489,8 +2385,6 @@
 
         const sendBtn = document.getElementById('sendBtn');
         sendBtn.innerHTML = '&#x2713;';
-        sendBtn.style.background = 'var(--gold)';
-        sendBtn.style.color = '#000';
       }
     }
 
@@ -1503,8 +2397,6 @@
       input.placeholder = "Narra o intesse dialoghi...";
       const sendBtn = document.getElementById('sendBtn');
       sendBtn.innerHTML = '&#x27A4;';
-      sendBtn.style.background = 'var(--green)';
-      sendBtn.style.color = '#fff';
       resetInputHeight();
       resetMobileViewport();
     }
@@ -1520,6 +2412,18 @@
 
       const room = getRoom();
 
+      if (editingMsgId) {
+        const m = room.messages.find(x => x.id === editingMsgId);
+        if (m) {
+          m.text = text;
+          syncAll();
+          renderStory();
+        }
+        cancelEdit();
+        resetMobileViewport();
+        return;
+      }
+
       if (isSceneMode) {
         if (!room.messages) room.messages = [];
         room.messages.push({ id: 'm_' + Date.now(), type: 'scene', text });
@@ -1527,22 +2431,6 @@
         cancelSceneMode();
         syncAll();
         renderStory();
-        checkAmbient(text);
-        return;
-      }
-
-      if (editingMsgId) {
-        const m = room.messages.find(x => x.id === editingMsgId);
-        if (m) {
-          m.text = text;
-          syncAll();
-          const targetBody = document.querySelector(`#msg_${editingMsgId} .card-body`);
-          if (targetBody) targetBody.innerHTML = formatTomeBody(text, m);
-          else renderStory();
-          checkAmbient(text);
-        }
-        cancelEdit();
-        resetMobileViewport();
         return;
       }
 
@@ -1565,7 +2453,6 @@
       resetInputHeight();
       syncAll();
       renderStory();
-      checkAmbient(text);
       resetMobileViewport();
     }
 
@@ -1589,8 +2476,6 @@
 
       const sendBtn = document.getElementById('sendBtn');
       sendBtn.innerHTML = '&#x2713;';
-      sendBtn.style.background = 'var(--gold)';
-      sendBtn.style.color = '#000';
 
       const targetEl = document.getElementById('msg_' + id);
       if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1602,8 +2487,6 @@
       document.getElementById('editBanner').style.display = 'none';
       const sendBtn = document.getElementById('sendBtn');
       sendBtn.innerHTML = '&#x27A4;';
-      sendBtn.style.background = 'var(--green)';
-      sendBtn.style.color = '#fff';
       resetInputHeight();
       resetMobileViewport();
     }
@@ -1612,11 +2495,9 @@
       if (confirm("Vuoi cancellare questo messaggio?")) {
         if (editingMsgId === id) cancelEdit();
         const room = getRoom();
-        room.messages = room.messages.filter(m => m.id !== id);
+        room.messages = (room.messages || []).filter(m => m.id !== id);
         syncAll();
-        const targetEl = document.getElementById('msg_' + id);
-        if (targetEl) targetEl.remove();
-        else renderStory();
+        renderStory();
       }
     }
 
@@ -1629,7 +2510,7 @@
     function saveNewRoom() {
       const title = document.getElementById('roomNameInput').value.trim();
       if (!title) return;
-      const r = { id: 'r_' + Date.now(), title, messages: [] };
+      const r = { id: 'r_' + Date.now(), title, messages: [], bgUrl: '', bgTitle: '' };
       state.rooms.push(r);
       state.activeRoom = r.id;
       if (editingMsgId) cancelEdit();
@@ -1687,6 +2568,7 @@
           renderRooms();
           renderStory();
           listenToTyping();
+          if (r.bgUrl) triggerAmbient(r.bgUrl, r.bgTitle);
           toggleDrawer(false);
         };
         container.appendChild(item);
@@ -1755,6 +2637,7 @@
       let doc = `${room.title.toUpperCase()}\n${'='.repeat(30)}\n\n`;
       (room.messages || []).forEach(m => {
         if (m.type === 'scene') doc += `\n[--- ${m.text} ---]\n\n`;
+        else if (m.type === 'location') doc += `\n[📍 LUOGO: ${m.title || 'Scorcio'}]\n\n`;
         else if (m.type === 'narrator') doc += `[NARRATORE]: ${m.text}\n\n`;
         else if (m.type === 'ooc') doc += `[OOC - ${m.author}]: // ${m.text}\n\n`;
         else doc += `${m.author} (${m.time}):\n${m.text}\n\n`;
