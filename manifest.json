@@ -7,9 +7,9 @@
   "theme_color": "#070504",
   "icons": [
     {
-      "src": "icon.png",
+      "src": "https://api.dicebear.com/7.x/identicon/svg?seed=ChroniclesRP",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ]
