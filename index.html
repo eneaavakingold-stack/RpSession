@@ -101,7 +101,7 @@
             flex-direction: column;
             gap: 40px;
             width: 100%;
-            max-width: 600px;
+            max-width: 450px;
             align-items: center;
         }
 
@@ -111,14 +111,18 @@
             -webkit-backdrop-filter: blur(2px);
             border: 1px solid var(--glass-border);
             border-radius: 24px;
-            padding: 30px;
+            padding: 25px 20px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
             position: relative;
             overflow: hidden;
             background-size: cover;
-            background-position: center;
+            background-position: center center;
             background-repeat: no-repeat;
             width: 100%;
+            min-height: 540px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
             transition: transform 0.3s ease;
         }
 
@@ -130,11 +134,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border-bottom: 2px solid rgba(255, 255, 255, 0.25);
-            padding-bottom: 15px;
+            padding: 10px 15px 15px 15px;
             background: transparent;
-            padding: 15px 20px;
             position: relative;
             z-index: 2;
         }
@@ -149,7 +152,7 @@
 
         .controls-top {
             position: absolute;
-            right: 20px;
+            right: 10px;
         }
 
         .upload-btn-wrapper {
@@ -186,19 +189,21 @@
             gap: 8px;
             text-align: center;
             background: rgba(0, 0, 0, 0.4);
-            padding: 18px;
+            padding: 18px 12px;
             border-radius: 16px;
             position: relative;
             z-index: 2;
-            justify-items: center; /* Centra perfettamente ogni singolo elemento nella sua colonna */
+            justify-items: center;
             align-items: center;
+            width: 100%;
+            margin-top: auto;
         }
 
         .day-name {
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 0.95rem;
             color: #ffb7c5;
-            padding-bottom: 8px;
+            padding-bottom: 6px;
             text-shadow: 0 1px 4px rgba(0,0,0,0.9);
             width: 100%;
             text-align: center;
@@ -207,11 +212,11 @@
         .day {
             aspect-ratio: 1;
             width: 100%;
-            max-width: 45px;
+            max-width: 42px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 500;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.1);
@@ -235,7 +240,7 @@
             margin-top: 50px;
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 15px;
             flex-wrap: wrap;
             width: 100%;
             max-width: 600px;
@@ -244,9 +249,9 @@
         .btn-main {
             background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
             color: white;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 700;
-            padding: 15px 40px;
+            padding: 14px 28px;
             border: none;
             border-radius: 30px;
             cursor: pointer;
@@ -262,9 +267,9 @@
         .btn-secondary {
             background: rgba(255, 255, 255, 0.15);
             color: white;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 600;
-            padding: 15px 30px;
+            padding: 14px 22px;
             border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 30px;
             cursor: pointer;
@@ -306,16 +311,18 @@
 
     <div class="calendar-grid" id="calendarGrid"></div>
 
-    <div class="actions">
-        <button class="btn-main" onclick="window.print()">🖨️ Stampa / Salva in PDF</button>
+    <div class="actions" id="actionButtons">
+        <button class="btn-main" onclick="exportFinalHTML()">🌐 Scarica Sito Finale</button>
+        <button class="btn-secondary" onclick="window.print()">🖨️ Stampa / PDF</button>
         <button class="btn-secondary" onclick="exportBackup()">💾 Salva Backup</button>
         <button class="btn-secondary" onclick="document.getElementById('importFile').click()">📂 Carica Backup</button>
         <input type="file" id="importFile" style="display:none" accept=".json" onchange="importBackup(event)">
         <button class="btn-secondary" style="background: rgba(255,0,0,0.3);" onclick="resetCalendar()">🗑️ Reset</button>
     </div>
 
-    <script>
+    <script id="mainScript">
         const sakuraContainer = document.getElementById('sakura');
+        sakuraContainer.innerHTML = '';
         for (let i = 0; i < 25; i++) {
             const petal = document.createElement('div');
             petal.classList.add('petal');
@@ -328,176 +335,4 @@
             sakuraContainer.appendChild(petal);
         }
 
-        const months = [
-            { name: "Gennaio", days: 31, startDay: 4 },
-            { name: "Febbraio", days: 28, startDay: 0 },
-            { name: "Marzo", days: 31, startDay: 0 },
-            { name: "Aprile", days: 30, startDay: 3 },
-            { name: "Maggio", days: 31, startDay: 5 },
-            { name: "Giugno", days: 30, startDay: 1 },
-            { name: "Luglio", days: 31, startDay: 3 },
-            { name: "Agosto", days: 31, startDay: 6 },
-            { name: "Settembre", days: 30, startDay: 2 },
-            { name: "Ottobre", days: 31, startDay: 4 },
-            { name: "Novembre", days: 30, startDay: 0 },
-            { name: "Dicembre", days: 31, startDay: 2 }
-        ];
-
-        const dayNames = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
-        const grid = document.getElementById('calendarGrid');
-
-        let photoStates = {};
-        try {
-            photoStates = JSON.parse(localStorage.getItem('calendar_states_edenchecchi_2027')) || {};
-        } catch (e) {
-            photoStates = {};
-        }
-
-        months.forEach((month, index) => {
-            if (!photoStates[index]) {
-                photoStates[index] = { scale: 100, posX: 50, posY: 50, url: '' };
-            }
-
-            const card = document.createElement('div');
-            card.classList.add('month-card');
-            card.id = `month-card-${index}`;
-
-            let daysHTML = '';
-            dayNames.forEach(d => {
-                daysHTML += `<div class="day-name">${d}</div>`;
-            });
-
-            for (let i = 0; i < month.startDay; i++) {
-                daysHTML += `<div class="day empty"></div>`;
-            }
-
-            for (let day = 1; day <= month.days; day++) {
-                const dayOfWeek = (month.startDay + day - 1) % 7;
-                const isSunday = dayOfWeek === 6;
-                daysHTML += `<div class="day ${isSunday ? 'sunday' : ''}">${day}</div>`;
-            }
-
-            card.innerHTML = `
-                <div class="month-header" id="header-${index}">
-                    <div class="month-title">${month.name}</div>
-                    <div class="controls-top" id="upload-wrap-${index}">
-                        <div class="upload-btn-wrapper">
-                            <button class="btn-action">🖼️ Foto</button>
-                            <input type="file" accept="image/*" onchange="compressAndLoadPhoto(event, ${index})">
-                        </div>
-                    </div>
-                </div>
-                <div class="days-grid">
-                    ${daysHTML}
-                </div>
-            `;
-
-            grid.appendChild(card);
-
-            if (photoStates[index].url) {
-                updateBackground(index);
-                document.getElementById(`upload-wrap-${index}`).style.display = 'none';
-            }
-        });
-
-        function compressAndLoadPhoto(event, index) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 700;
-                    const MAX_HEIGHT = 700;
-                    let width = img.width;
-                    let height = img.height;
-
-                    if (width > height) {
-                        if (width > MAX_WIDTH) {
-                            height *= MAX_WIDTH / width;
-                            width = MAX_WIDTH;
-                        }
-                    } else {
-                        if (height > MAX_HEIGHT) {
-                            width *= MAX_HEIGHT / height;
-                            height = MAX_HEIGHT;
-                        }
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-
-                    photoStates[index].url = compressedDataUrl;
-                    photoStates[index].scale = 100;
-                    photoStates[index].posX = 50;
-                    photoStates[index].posY = 50;
-
-                    saveAndApply(index);
-                    document.getElementById(`upload-wrap-${index}`).style.display = 'none';
-                }
-                img.src = e.target.result;
-            }
-            reader.readAsDataURL(file);
-        }
-
-        function updateBackground(index) {
-            const card = document.getElementById(`month-card-${index}`);
-            const state = photoStates[index];
-            
-            if (state.url) {
-                card.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url('${state.url}')`;
-                card.style.backgroundSize = `${state.scale}%`;
-                card.style.backgroundPosition = `${state.posX}% ${state.posY}%`;
-            }
-        }
-
-        function saveAndApply(index) {
-            try {
-                localStorage.setItem('calendar_states_edenchecchi_2027', JSON.stringify(photoStates));
-                updateBackground(index);
-            } catch (e) {
-                updateBackground(index);
-            }
-        }
-
-        function exportBackup() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(photoStates));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", "backup_foto_calendario_2027.json");
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-        }
-
-        function importBackup(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    photoStates = JSON.parse(e.target.result);
-                    localStorage.setItem('calendar_states_edenchecchi_2027', JSON.stringify(photoStates));
-                    location.reload();
-                } catch (err) {
-                    alert("File di backup non valido.");
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        function resetCalendar() {
-            if (confirm("Vuoi davvero cancellare tutte le foto salvate?")) {
-                localStorage.removeItem('calendar_states_edenchecchi_2027');
-                location.reload();
-            }
-        }
-    </script>
-</body>
-</html>
+        const months =
